@@ -8,6 +8,12 @@ app.use(cors());
 const NTP_SERVER = '67.80.15.73'; // Your NTP GPS time server
 const PORT = process.env.PORT || 3000;
 
+// 🔹 New Route: Handle requests to "/"
+app.get("/", (req, res) => {
+    res.send("Welcome to the NTP Time Server! Try /time to get the current NTP time.");
+});
+
+// Existing Route: Fetch NTP Time
 app.get('/time', (req, res) => {
     ntpClient.getNetworkTime(NTP_SERVER, 123, (err, date) => {
         if (err) {
