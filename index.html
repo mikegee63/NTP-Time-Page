@@ -25,24 +25,28 @@
             font-size: 5em;
             font-weight: bold;
         }
-        #loading {
-            font-size: 1.5em;
-            margin-top: 10px;
-        }
     </style>
     <script>
-        let offset = 0; // Time difference between server and client
+        let offset = 0;
 
         async function syncTime() {
             try {
-                const response = await fetch("/time");
+                const requestStart = Date.now(); // Timestamp before request
+                const response = await fetch("/sync");
                 const data = await response.json();
+                const requestEnd = Date.now(); // Timestamp after response
+
+                const roundTripTime = requestEnd - requestStart; // Network latency
+                const serverProcessingTime = data.serverProcessingTime; // Processing delay
+                
+                const networkLatency = (roundTripTime - serverProcessingTime) / 2; // Approximate one-way delay
+
                 const serverTime = new Date(data.time).getTime();
-                const clientTime = Date.now();
-                offset = serverTime - clientTime;
-                updateClock(); // Update immediately after syncing
+                offset = serverTime + networkLatency - Date.now() - 24; // Apply 24ms correction
+
+                updateClock(); // Update clock immediately
             } catch (error) {
-                console.error("Failed to fetch NTP time:", error);
+                console.error("Failed to sync with NTP:", error);
             }
         }
 
@@ -55,12 +59,11 @@
         }
 
         setInterval(updateClock, 1000); // Update clock every second
-        window.onload = syncTime; // Sync with server on load
+        window.onload = syncTime; // Sync time on page load
     </script>
 </head>
 <body>
     <h1>World Time USA</h1>
-     <div id="clock">--:--:--</div>
-    <h2><p id="loading">Syncing with Stratum 1 NTP server</p></h2>
+    <div id="clock">--:--:--</div>
 </body>
 </html>
