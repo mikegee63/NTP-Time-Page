@@ -39,7 +39,7 @@
                 const roundTripTime = requestEnd - requestStart; // Network latency
                 const serverProcessingTime = data.serverProcessingTime; // Processing delay
                 
-                const networkLatency = (roundTripTime - serverProcessingTime) / 2; // Approximate one-way delay
+                const networkLatency = (roundTripTime - serverProcessingTime) / 25; // Approximate one-way delay
 
                 const serverTime = new Date(data.time).getTime();
                 offset = serverTime + networkLatency - Date.now() - 24; // Apply 24ms correction
