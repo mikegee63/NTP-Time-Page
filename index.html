@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>World Time USA</title>
   <style>
     body {
@@ -27,64 +27,102 @@
     }
   </style>
   <script>
-    let offsetMs = 0;  // How many ms the server is ahead (+) or behind (-) our local clock
+    let offsetMs = 0;  // how many ms the server is ahead of (or behind) our local clock
 
-    // Fetch server time, measure round-trip, calculate offset
-    async function syncTime() {
+    // ----- CORE MULTI-PING LOGIC -----
+    // We'll do several quick offset checks, then take the median to reduce jitter.
+    async function multiSyncTime(attempts = 5) {
+      const offsets = [];
+      for (let i = 0; i < attempts; i++) {
+        const singleOffset = await singleSync();
+        if (singleOffset !== null) {
+          offsets.push(singleOffset);
+        }
+        // Short delay (100ms) between each ping
+        await sleep(100);
+      }
+
+      if (offsets.length === 0) {
+        console.error("All sync attempts failed, no offset to apply.");
+        return;
+      }
+
+      // Sort offsets from smallest to largest
+      offsets.sort((a, b) => a - b);
+
+      // Take the median offset
+      const mid = Math.floor(offsets.length / 2);
+      if (offsets.length % 2 === 1) {
+        offsetMs = offsets[mid];
+      } else {
+        // Average the two middle values if even number of offsets
+        offsetMs = (offsets[mid - 1] + offsets[mid]) / 2;
+      }
+
+      console.log(`Multi-sync offset: ${offsetMs.toFixed(2)} ms (from ${offsets.length} valid pings)`);
+    }
+
+    // Single ping to measure offset vs. server time
+    async function singleSync() {
       try {
-        // 1. Record local time BEFORE request
-        const t0 = Date.now();
+        const t0 = performance.now(); // client timestamp BEFORE request
+        const response = await fetch("/sync");
+        const t1 = performance.now(); // client timestamp AFTER response
 
-        const response = await fetch('/sync');
+        if (!response.ok) {
+          throw new Error(`Server responded with status ${response.status}`);
+        }
+
         const data = await response.json();
+        // data.time is an ISO string, e.g. "2025-01-22T14:15:16.789Z"
+        const serverTimeMs = new Date(data.time).getTime();
 
-        // 2. Record local time AFTER response
-        const t1 = Date.now();
-        
-        // 3. Round-trip in ms
+        // Round-trip time
         const roundTrip = t1 - t0;
-        // 4. One-way guess
+        // Assume symmetrical latency
         const oneWay = roundTrip / 2;
 
-        // 5. The serverTime in ms (from the NTP server, via our node app)
-        const serverTimeMs = new Date(data.time).getTime(); 
-        // data.time is an ISO string, e.g. "2025-01-22T19:48:20.000Z"
-
-        // 6. The serverTime is presumably "current" right when the server responded.
-        // So the "midpoint" on the client side is (t0 + t1)/2
-        // The server's time at that midpoint is approximately serverTimeMs + oneWay
+        // The serverTime was presumably "current" at the moment the server responded
+        // which we approximate as the midpoint of our request timeline (t0..t1).
         const serverMidpoint = serverTimeMs + oneWay;
         const clientMidpoint = (t0 + t1) / 2;
 
-        // 7. offsetMs = how much the server’s midpoint is ahead/behind the client’s midpoint
-        offsetMs = serverMidpoint - clientMidpoint;
-
-        console.log(`Sync successful. Round-trip: ${roundTrip} ms, offset: ${offsetMs.toFixed(2)} ms`);
-      } catch (error) {
-        console.error("Failed to sync time:", error);
+        return serverMidpoint - clientMidpoint;
+      } catch (err) {
+        console.warn("singleSync error:", err);
+        return null;
       }
     }
 
-    // Update the displayed clock using (local clock + offset)
-    function updateClock() {
-      const localNow = Date.now();
-      const correctedNow = localNow + offsetMs;  // "true" time if offset is accurate
+    // Utility to pause
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
-      const dateObj = new Date(correctedNow);
+    // ----- CLOCK UPDATE -----
+    // We'll display corrected time = local clock + offsetMs
+    function updateClock() {
+      // For displaying "real" clock time, we want the actual date/time.
+      // We'll use Date.now() + offsetMs.
+      const localNow = Date.now();
+      const trueNow = localNow + offsetMs;
+
+      const dateObj = new Date(trueNow);
       const hours = String(dateObj.getHours()).padStart(2, "0");
       const minutes = String(dateObj.getMinutes()).padStart(2, "0");
       const seconds = String(dateObj.getSeconds()).padStart(2, "0");
       document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
     }
 
-    // On page load, do an immediate sync
+    // ----- INIT -----
+    // Run multi-ping sync once on page load, then again every 10 mins
     window.addEventListener('load', async () => {
-      await syncTime();
-      // Optionally re-sync every 10 minutes (600,000 ms):
-      setInterval(syncTime, 600000);
+      await multiSyncTime(5); // do 5 pings right away
+      // Optionally re-sync every 10 minutes
+      setInterval(() => multiSyncTime(5), 10 * 60 * 1000);
     });
 
-    // Update the clock display every 1 second
+    // Update the visible clock every second
     setInterval(updateClock, 1000);
   </script>
 </head>
