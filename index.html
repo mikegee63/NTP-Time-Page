@@ -1,70 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Time USA</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #111;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
-        #clock {
-            font-size: 5em;
-            font-weight: bold;
-        }
-    </style>
-    <script>
-        let offset = 0;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Time USA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    #clock {
+      font-size: 5em;
+      font-weight: bold;
+    }
+  </style>
+  <script>
+    let offsetMs = 0;  // How many ms the server is ahead (+) or behind (-) our local clock
 
-        async function syncTime() {
-            try {
-                const requestStart = Date.now(); // Timestamp before request
-                const response = await fetch("/sync");
-                const data = await response.json();
-                const requestEnd = Date.now(); // Timestamp after response
+    // Fetch server time, measure round-trip, calculate offset
+    async function syncTime() {
+      try {
+        // 1. Record local time BEFORE request
+        const t0 = Date.now();
 
-                const roundTripTime = requestEnd - requestStart; // Network latency
-                const serverProcessingTime = data.serverProcessingTime; // Processing delay
-                
-                const networkLatency = (roundTripTime - serverProcessingTime) / 1; // Approximate one-way delay
+        const response = await fetch('/sync');
+        const data = await response.json();
 
-                const serverTime = new Date(data.time).getTime();
-                offset = serverTime + networkLatency - Date.now() - 26; // Apply 26ms correction
+        // 2. Record local time AFTER response
+        const t1 = Date.now();
+        
+        // 3. Round-trip in ms
+        const roundTrip = t1 - t0;
+        // 4. One-way guess
+        const oneWay = roundTrip / 2;
 
-                updateClock(); // Update clock immediately
-            } catch (error) {
-                console.error("Failed to sync with NTP:", error);
-            }
-        }
+        // 5. The serverTime in ms (from the NTP server, via our node app)
+        const serverTimeMs = new Date(data.time).getTime(); 
+        // data.time is an ISO string, e.g. "2025-01-22T19:48:20.000Z"
 
-        function updateClock() {
-            const now = new Date(Date.now() + offset);
-            const hours = String(now.getHours()).padStart(2, "0");
-            const minutes = String(now.getMinutes()).padStart(2, "0");
-            const seconds = String(now.getSeconds()).padStart(2, "0");
-            document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
-        }
+        // 6. The serverTime is presumably "current" right when the server responded.
+        // So the "midpoint" on the client side is (t0 + t1)/2
+        // The server's time at that midpoint is approximately serverTimeMs + oneWay
+        const serverMidpoint = serverTimeMs + oneWay;
+        const clientMidpoint = (t0 + t1) / 2;
 
-        setInterval(updateClock, 1000); // Update clock every second
-        window.onload = syncTime; // Sync time on page load
-    </script>
+        // 7. offsetMs = how much the server’s midpoint is ahead/behind the client’s midpoint
+        offsetMs = serverMidpoint - clientMidpoint;
+
+        console.log(`Sync successful. Round-trip: ${roundTrip} ms, offset: ${offsetMs.toFixed(2)} ms`);
+      } catch (error) {
+        console.error("Failed to sync time:", error);
+      }
+    }
+
+    // Update the displayed clock using (local clock + offset)
+    function updateClock() {
+      const localNow = Date.now();
+      const correctedNow = localNow + offsetMs;  // "true" time if offset is accurate
+
+      const dateObj = new Date(correctedNow);
+      const hours = String(dateObj.getHours()).padStart(2, "0");
+      const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+      const seconds = String(dateObj.getSeconds()).padStart(2, "0");
+      document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
+    }
+
+    // On page load, do an immediate sync
+    window.addEventListener('load', async () => {
+      await syncTime();
+      // Optionally re-sync every 10 minutes (600,000 ms):
+      setInterval(syncTime, 600000);
+    });
+
+    // Update the clock display every 1 second
+    setInterval(updateClock, 1000);
+  </script>
 </head>
 <body>
-    <h1>World Time USA</h1>
-    <div id="clock">--:--:--</div>
-    <h2>Synchronized with Stratum 1 NTP Server</h2>
+  <h1>World Time USA</h1>
+  <div id="clock">--:--:--</div>
+  <h2>Synchronized with Stratum 1 NTP Server</h2>
 </body>
 </html>
