@@ -61,7 +61,7 @@
         offset = offsets.length % 2 === 1 ? offsets[mid] : (offsets[mid - 1] + offsets[mid]) / 2;
 
         lastSyncTime = Date.now();
-        document.getElementById("loading").textContent = "Sync complete.";
+        document.getElementById("loading").textContent = "Stratum 1 Disciplined.";
         console.log(`Offsets collected: ${offsets.map(o => o.toFixed(2))} ms`);
     }
 
