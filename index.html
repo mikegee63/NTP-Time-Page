@@ -31,94 +31,58 @@
     }
   </style>
   <script>
-    let offset = 0; // Final offset in ms between server & client
+    let offset = 0; // Offset between server & client in milliseconds
 
     /************************************************************
-     *  Single Ping: Fetch offset once from /time
+     *  Fetch NTP Time and Calculate Offset
      ************************************************************/
-    async function singleSyncTime() {
+    async function syncTime() {
       try {
+        document.getElementById("loading").textContent = "Syncing with NTP server...";
         const response = await fetch("/time");
         const data = await response.json();
-        const serverTime = new Date(data.time).getTime();
-        const clientTime = Date.now();
-        return serverTime - clientTime; // offset for one ping
+
+        const requestStart = Date.now();
+        const serverUTC = new Date(data.utc_time).getTime();
+        const requestEnd = Date.now();
+
+        // Calculate network latency & adjust offset
+        const roundTripTime = requestEnd - requestStart;
+        const processingDelay = data.serverProcessingTime;
+        const networkLatency = (roundTripTime - processingDelay) / 2;
+        
+        offset = serverUTC + networkLatency - Date.now();
+        document.getElementById("loading").textContent = "Sync complete.";
       } catch (error) {
         console.error("Failed to fetch NTP time:", error);
-        return null; // indicates failure
-      }
-    }
-
-    /************************************************************
-     *  Multi-Ping Sync: do several pings, pick median offset
-     ************************************************************/
-    async function multiSyncTime(pings = 3) {
-      const offsets = [];
-      // Optional: show some "Syncing..." text
-      document.getElementById("loading").textContent = "Syncing with NTP server...";
-
-      for (let i = 0; i < pings; i++) {
-        const singleOffset = await singleSyncTime();
-        if (singleOffset !== null) {
-          offsets.push(singleOffset);
-        }
-        // short pause between each ping (100 ms)
-        await new Promise(res => setTimeout(res, 100));
-      }
-
-      if (offsets.length === 0) {
-        console.error("All pings failed! Offset not updated.");
         document.getElementById("loading").textContent = "Sync failed.";
-        return;
       }
-
-      // Sort numeric offsets
-      offsets.sort((a, b) => a - b);
-
-      // Median
-      const mid = Math.floor(offsets.length / 2);
-      if (offsets.length % 2 === 1) {
-        offset = offsets[mid];
-      } else {
-        offset = (offsets[mid - 1] + offsets[mid]) / 2;
-      }
-
-      // After multi-sync, we can update immediately
-      updateClock();
-      document.getElementById("loading").textContent = "Sync complete.";
-      console.log(`Multi-sync offsets: ${offsets.map(o => o.toFixed(1))} ms, final offset: ${offset.toFixed(1)} ms`);
     }
 
     /************************************************************
-     *  Clock Display (12-hour format)
+     *  Convert UTC to Local Time (12-hour format)
      ************************************************************/
     function updateClock() {
       const now = new Date(Date.now() + offset);
 
-      // Convert from 24-hour to 12-hour
-      let hours = now.getHours(); // 0–23
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
+      // Convert to local time
+      const localTimeString = now.toLocaleTimeString("en-US", { 
+        hour: "2-digit", 
+        minute: "2-digit", 
+        second: "2-digit", 
+        hour12: true 
+      });
 
-      const ampm = hours >= 12 ? "PM" : "AM";
-      hours = hours % 12;
-      if (hours === 0) {
-        hours = 12;
-      }
-
-      const hoursStr = String(hours).padStart(2, "0");
-      document.getElementById("clock").innerText =
-        `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+      document.getElementById("clock").innerText = localTimeString;
     }
 
     /************************************************************
-     *  Page Initialization
+     *  Initialize Clock on Page Load
      ************************************************************/
-    window.onload = () => {
-      // 1) Perform multi-ping (3 pings) on page load
-      multiSyncTime(3);
-      // 2) Start updating the clock every second
-      setInterval(updateClock, 1000);
+    window.onload = async () => {
+      await syncTime(); // Get precise time sync
+      updateClock(); // Show initial time
+      setInterval(updateClock, 1000); // Update every second
     };
   </script>
 </head>
