@@ -48,12 +48,14 @@ h1 {
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow effect */
 }
 #date {
-    position: absolute;
-    right: 10%;  /* Adjust based on layout */
-    bottom: 110px; /* Space above city blocks */
+    display: block;
+    text-align: right;
+    width: fit-content;
+    margin-left: auto;  /* Pushes it to the right */
+    margin-right: 5%;  /* Adjust spacing from right edge */
     font-size: 1.5em;
     font-weight: bold;
-    text-align: right;
 }
+
 
 
