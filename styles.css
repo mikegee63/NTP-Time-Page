@@ -1,0 +1,49 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #111;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+h1 {
+  font-size: 3em;
+  margin-bottom: 10px;
+}
+
+#clock {
+  font-size: 5em;
+  font-weight: bold;
+}
+
+#loading {
+  font-size: 1.5em;
+  margin-top: 10px;
+}
+
+/* City Container Styling */
+.city-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* City Block Styling (Updated to White Background & Black Text) */
+.city {
+  background-color: #fff; /* White Background */
+  color: #000; /* Black Text */
+  padding: 15px 25px; /* More padding for better spacing */
+  margin: 10px;
+  border-radius: 8px;
+  font-size: 1.5em; /* Increased text size */
+  font-weight: bold;
+  text-align: center;
+  min-width: 130px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow effect */
+}
