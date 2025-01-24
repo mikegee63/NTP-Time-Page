@@ -51,7 +51,7 @@ h1 {
     text-align: right;   /* Align text to the right */
     font-size: 1.5em;    /* Adjust font size */
     font-weight: bold;   /* Make it stand out */
-    margin-right: 50px;  /* Add spacing from the right edge */
+    margin-right: 100px;  /* Add spacing from the right edge */
     margin-bottom: 8px; /* Space before city blocks */
     width: 90%;          /* Ensure it spans across the section */
     display: block;      /* Ensure it behaves like a full-width block */
