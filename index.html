@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>World Time USA</title>
-  <head>
-  <link rel="stylesheet" href="styles.css">
-</head>
+  <link rel="stylesheet" href="styles.css"> <!-- ✅ Properly linked CSS -->
+
   <script>
     let offset = 0; 
     let lastSyncTime = 0; 
@@ -115,6 +114,23 @@
     }
 
     /************************************************************
+     *  ✅ Update Date Display (User's Local Date)
+     ************************************************************/
+    function updateDate() {
+        const now = new Date();
+        
+        // ✅ Format: "Friday, January 24, 2025"
+        const formattedDate = now.toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+
+        document.getElementById("date").textContent = formattedDate;
+    }
+
+    /************************************************************
      *  Continuous Sync: Re-sync every 2 minutes to avoid drift
      ************************************************************/
     setInterval(() => {
@@ -130,31 +146,19 @@
     window.onload = async () => {
         await syncTime(5); // Perform 5 pings on startup
         updateClock(); // Start updating clock in real time
+        updateDate();  // ✅ Display the formatted date
     };
 </script>
 </head>
-<body>
-  <h1>World Time USA</h1>
-  <div id="clock">--:--:--</div>
-  <p id="loading">Syncing with NTP server...</p>
+
 <body>
   <h1>World Time USA</h1>
   <div id="clock">--:--:--</div>
   <p id="loading">Syncing with NTP server...</p>
 
-  <!-- ✅ New Date Display -->
+  <!-- ✅ New Date Display (Right-Aligned) -->
   <div id="date"></div>
 
-  <!-- City Time Blocks -->
-  <div class="city-container">
-    <div class="city">Los Angeles<br><span id="Los Angeles">--:--:--</span></div>
-    <div class="city">New York<br><span id="New York">--:--:--</span></div>
-    <div class="city">London<br><span id="London">--:--:--</span></div>
-    <div class="city">Paris<br><span id="Paris">--:--:--</span></div>
-    <div class="city">Beijing<br><span id="Beijing">--:--:--</span></div>
-    <div class="city">Tokyo<br><span id="Tokyo">--:--:--</span></div>
-  </div>
-</body>
   <!-- City Time Blocks -->
   <div class="city-container">
     <div class="city">Los Angeles<br><span id="Los Angeles">--:--:--</span></div>
