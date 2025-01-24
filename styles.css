@@ -52,7 +52,7 @@ h1 {
     text-align: right;
     width: fit-content;
     margin-left: auto;  /* Pushes it to the right */
-    margin-right: 5%;  /* Adjust spacing from right edge */
+    margin-right: 8%;  /* Adjust spacing from right edge */
     font-size: 1.5em;
     font-weight: bold;
 }
