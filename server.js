@@ -9,6 +9,9 @@ app.use(cors());
 const NTP_SERVER = '67.80.15.73'; // Your NTP GPS time server
 const PORT = process.env.PORT || 3000;
 
+// ✅ Serve static files from the same directory
+app.use(express.static(__dirname)); 
+
 // Serve the HTML page
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
