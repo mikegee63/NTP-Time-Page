@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>World Time USA</title>
   <link rel="stylesheet" href="styles.css"> <!-- ✅ Properly linked CSS -->
-
+  
   <script>
     let offset = 0; 
     let lastSyncTime = 0; 
 
-    // List of major cities and their IANA time zones (instead of static offsets)
+    // ✅ List of major cities & their IANA time zones
     const cities = [
       { name: "Los Angeles", timeZone: "America/Los_Angeles" },
       { name: "New York", timeZone: "America/New_York" },
@@ -41,7 +41,7 @@
             return;
         }
 
-        // Pick the best offset (median is less affected by network spikes)
+        // ✅ Pick the best offset (median is more stable)
         offsets.sort((a, b) => a - b);
         const mid = Math.floor(offsets.length / 2);
         offset = offsets.length % 2 === 1 ? offsets[mid] : (offsets[mid - 1] + offsets[mid]) / 2;
@@ -79,7 +79,7 @@
     function updateClock() {
         const now = new Date(Date.now() + offset);
 
-        // Convert UTC to user's local time
+        // ✅ Convert UTC to user's local time
         const localTimeString = now.toLocaleTimeString("en-US", { 
             hour: "2-digit", 
             minute: "2-digit", 
@@ -89,10 +89,10 @@
 
         document.getElementById("clock").innerText = localTimeString;
 
-        // Update world city clocks every second (keeps smooth)
+        // ✅ Update world city clocks every second (smooth animation)
         updateWorldClocks(now);
 
-        // Use requestAnimationFrame for smoother updates
+        // ✅ RequestAnimationFrame makes updates smooth
         requestAnimationFrame(updateClock);
     }
 
@@ -106,7 +106,7 @@
                 minute: "2-digit", 
                 second: "2-digit",
                 hour12: true,
-                timeZone: city.timeZone // Dynamically adjust for DST
+                timeZone: city.timeZone // ✅ Adjust for DST
             });
 
             document.getElementById(city.name).innerText = cityTimeString;
@@ -135,17 +135,17 @@
      ************************************************************/
     setInterval(() => {
         const drift = Date.now() - lastSyncTime;
-        if (drift > 120000) { // Re-sync if more than 2 minutes have passed
+        if (drift > 120000) { // ✅ Re-sync if more than 2 minutes have passed
             syncTime();
         }
-    }, 10000); // Check every 10 seconds
+    }, 10000); // ✅ Check every 10 seconds
 
     /************************************************************
      *  Page Initialization
      ************************************************************/
     window.onload = async () => {
-        await syncTime(5); // Perform 5 pings on startup
-        updateClock(); // Start updating clock in real time
+        await syncTime(5); // ✅ Perform 5 pings on startup
+        updateClock(); // ✅ Start updating clock in real time
         updateDate();  // ✅ Display the formatted date
     };
 </script>
@@ -156,10 +156,10 @@
   <div id="clock">--:--:--</div>
   <p id="loading">Syncing with NTP server...</p>
 
-  <!-- ✅ New Date Display (Right-Aligned) -->
+  <!-- ✅ Date Display -->
   <div id="date"></div>
 
-  <!-- City Time Blocks -->
+  <!-- ✅ City Time Blocks (Only One Set) -->
   <div class="city-container">
     <div class="city">Los Angeles<br><span id="Los Angeles">--:--:--</span></div>
     <div class="city">New York<br><span id="New York">--:--:--</span></div>
