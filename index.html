@@ -4,48 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>World Time USA</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #111;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      font-size: 3em;
-      margin-bottom: 10px;
-    }
-    #clock {
-      font-size: 5em;
-      font-weight: bold;
-    }
-    #loading {
-      font-size: 1.5em;
-      margin-top: 10px;
-    }
-    .city-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    .city {
-      background-color: #222;
-      padding: 10px 20px;
-      margin: 5px;
-      border-radius: 8px;
-      font-size: 1.2em;
-      font-weight: bold;
-      text-align: center;
-      min-width: 120px;
-    }
-  </style>
+  <head>
+  <link rel="stylesheet" href="styles.css">
+</head>
   <script>
     let offset = 0; 
     let lastSyncTime = 0; 
