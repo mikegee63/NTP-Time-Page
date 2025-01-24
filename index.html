@@ -29,10 +29,36 @@
       font-size: 1.5em;
       margin-top: 10px;
     }
+    .city-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .city {
+      background-color: #222;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 8px;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-align: center;
+      min-width: 120px;
+    }
   </style>
   <script>
-    let offset = 0; // Final offset in ms between server & client
-    let lastSyncTime = 0; // Last sync time (for drift calculations)
+    let offset = 0; 
+    let lastSyncTime = 0; 
+
+    // List of major cities with their UTC offsets
+    const cities = [
+      { name: "Los Angeles", offset: -8 },
+      { name: "New York", offset: -5 },
+      { name: "London", offset: 0 },
+      { name: "Paris", offset: 1 },
+      { name: "Beijing", offset: 8 },
+      { name: "Tokyo", offset: 9 }
+    ];
 
     /************************************************************
      *  Multi-Ping Sync: Perform multiple pings & pick best offset
@@ -103,8 +129,28 @@
 
         document.getElementById("clock").innerText = localTimeString;
 
+        // Update world city clocks
+        updateWorldClocks(now);
+
         // Use requestAnimationFrame for smoother updates
         requestAnimationFrame(updateClock);
+    }
+
+    /************************************************************
+     *  Update World Clocks
+     ************************************************************/
+    function updateWorldClocks(nowUTC) {
+        cities.forEach(city => {
+            const cityTime = new Date(nowUTC.getTime() + city.offset * 3600000);
+            const cityTimeString = cityTime.toLocaleTimeString("en-US", { 
+                hour: "2-digit", 
+                minute: "2-digit", 
+                second: "2-digit", 
+                hour12: true 
+            });
+
+            document.getElementById(city.name).innerText = cityTimeString;
+        });
     }
 
     /************************************************************
@@ -130,5 +176,15 @@
   <h1>World Time USA</h1>
   <div id="clock">--:--:--</div>
   <p id="loading">Syncing with NTP server...</p>
+
+  <!-- City Time Blocks -->
+  <div class="city-container">
+    <div class="city">Los Angeles<br><span id="Los Angeles">--:--:--</span></div>
+    <div class="city">New York<br><span id="New York">--:--:--</span></div>
+    <div class="city">London<br><span id="London">--:--:--</span></div>
+    <div class="city">Paris<br><span id="Paris">--:--:--</span></div>
+    <div class="city">Beijing<br><span id="Beijing">--:--:--</span></div>
+    <div class="city">Tokyo<br><span id="Tokyo">--:--:--</span></div>
+  </div>
 </body>
 </html>
