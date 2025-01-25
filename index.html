@@ -12,13 +12,14 @@
 
         // ✅ List of major cities & their IANA time zones
         const cities = [
-            { name: "Los Angeles", timeZone: "America/Los_Angeles" },
-            { name: "New York", timeZone: "America/New_York" },
-            { name: "London", timeZone: "Europe/London" },
-            { name: "Paris", timeZone: "Europe/Paris" },
-            { name: "Beijing", timeZone: "Asia/Shanghai" },
-            { name: "Tokyo", timeZone: "Asia/Tokyo" }
-        ];
+    { name: "LosAngeles", timeZone: "America/Los_Angeles" },
+    { name: "NewYork", timeZone: "America/New_York" },
+    { name: "London", timeZone: "Europe/London" },
+    { name: "Paris", timeZone: "Europe/Paris" },
+    { name: "Beijing", timeZone: "Asia/Shanghai" },
+    { name: "Tokyo", timeZone: "Asia/Tokyo" }
+];
+
 
         /************************************************************
          *  Sync Time from Server and Correct Offset
@@ -67,21 +68,24 @@
          *  Update World Clocks (Fixes Time Zones & DST)
          ************************************************************/
         function updateWorldClocks(nowUTC) {
-            cities.forEach(city => {
-                const cityTimeString = nowUTC.toLocaleTimeString("en-US", { 
-                    hour: "2-digit", 
-                    minute: "2-digit", 
-                    second: "2-digit",
-                    hour12: true,
-                    timeZone: city.timeZone
-                });
+    cities.forEach(city => {
+        const cityTimeString = nowUTC.toLocaleTimeString("en-US", { 
+            hour: "2-digit", 
+            minute: "2-digit", 
+            second: "2-digit",
+            hour12: true,
+            timeZone: city.timeZone
+        });
 
-                const cityElement = document.getElementById(city.name);
-                if (cityElement) {
-                    cityElement.innerText = cityTimeString;
-                }
-            });
+        const cityElement = document.getElementById(city.name);
+        if (cityElement) {
+            cityElement.innerText = cityTimeString;
+        } else {
+            console.error(`City element NOT FOUND: ${city.name}`);
         }
+    });
+}
+
 
         /************************************************************
          *  Update Date Display (User's Local Date)
@@ -132,14 +136,13 @@
         <div id="date"></div>
 
         <!-- City Time Blocks -->
-        <div class="city-container">
-            <div class="city">Los Angeles<br><span id="Los Angeles">--:--:--</span></div>
-            <div class="city">New York<br><span id="New York">--:--:--</span></div>
-            <div class="city">London<br><span id="London">--:--:--</span></div>
-            <div class="city">Paris<br><span id="Paris">--:--:--</span></div>
-            <div class="city">Beijing<br><span id="Beijing">--:--:--</span></div>
-            <div class="city">Tokyo<br><span id="Tokyo">--:--:--</span></div>
-        </div>
+        <div class="city">Los Angeles<br><span id="LosAngeles">--:--:--</span></div>
+<div class="city">New York<br><span id="NewYork">--:--:--</span></div>
+<div class="city">London<br><span id="London">--:--:--</span></div>
+<div class="city">Paris<br><span id="Paris">--:--:--</span></div>
+<div class="city">Beijing<br><span id="Beijing">--:--:--</span></div>
+<div class="city">Tokyo<br><span id="Tokyo">--:--:--</span></div>
+
     </div>
 </body>
 </html>
