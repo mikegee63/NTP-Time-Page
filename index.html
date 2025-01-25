@@ -54,47 +54,42 @@
     /************************************************************
      *  Single Ping: Fetch time from /time & calculate offset
      ************************************************************/
-    async function singlePing() {
-        try {
-            const requestStart = Date.now();
-            const response = await fetch("/time");
-            const data = await response.json();
-            const requestEnd = Date.now();
+   async function syncTime() {
+    try {
+        const response = await fetch("/time");
+        const data = await response.json();
+        const serverTime = new Date(data.time).getTime();
+        const clientTime = Date.now();
+        offset = serverTime - clientTime;
+        
+        updateClock(); // ✅ Immediately update the clock after syncing
 
-            const serverUTC = new Date(data.utc_time).getTime();
-            const roundTripTime = requestEnd - requestStart;
-            const processingDelay = data.serverProcessingTime;
-            const networkLatency = (roundTripTime - processingDelay) / 2;
-
-            return serverUTC + networkLatency - Date.now(); // Return corrected offset
-        } catch (error) {
-            console.error("Failed to fetch NTP time:", error);
-            return null;
-        }
+        document.getElementById("loading").textContent = "Stratum 1 Disciplined";
+    } catch (error) {
+        console.error("Failed to fetch NTP time:", error);
+        document.getElementById("loading").textContent = "Sync failed.";
     }
+}
+
 
     /************************************************************
      *  Smooth Real-Time Clock Update (Higher Accuracy)
      ************************************************************/
     function updateClock() {
-        const now = new Date(Date.now() + offset);
-
-        // ✅ Convert UTC to user's local time
-        const localTimeString = now.toLocaleTimeString("en-US", { 
-            hour: "2-digit", 
-            minute: "2-digit", 
-            second: "2-digit", 
-            hour12: true 
-        });
-
-        document.getElementById("clock").innerText = localTimeString;
-
-        // ✅ Update world city clocks every second (smooth animation)
-        updateWorldClocks(now);
-
-        // ✅ RequestAnimationFrame makes updates smooth
-        requestAnimationFrame(updateClock);
+    const now = new Date(Date.now() + offset);
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    
+    const clockElement = document.getElementById("clock");
+    
+    if (clockElement) {
+        clockElement.innerText = `${hours}:${minutes}:${seconds}`;
+    } else {
+        console.error("Clock element NOT FOUND!");
     }
+}
+
 
     /************************************************************
      *  Update World Clocks (Fixes Time Zones & DST)
@@ -148,6 +143,13 @@
         updateClock(); // ✅ Start updating clock in real time
         updateDate();  // ✅ Display the formatted date
     };
+    document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("clock").innerText = "Loading...";
+    syncTime(); // 🔹 Fetch NTP time as soon as page loads
+});
+
+setInterval(updateClock, 1000);
+
 </script>
 </head>
 
