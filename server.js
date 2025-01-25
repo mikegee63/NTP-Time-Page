@@ -1,7 +1,6 @@
 const express = require('express');
 const ntpClient = require('ntp-client');
 const cors = require('cors');
-const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -9,30 +8,19 @@ app.use(cors());
 const NTP_SERVER = '67.80.15.73'; // Your NTP GPS time server
 const PORT = process.env.PORT || 3000;
 
-// ✅ Serve static files from the same directory
-app.use(express.static(__dirname)); 
-
-// Serve the HTML page
+// 🔹 New Route: Handle requests to "/"
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
+    res.send("Welcome to the NTP Time Server! Try /time to get the current NTP time.");
 });
 
-// API for precise time sync (Returns UTC only)
-app.get("/time", (req, res) => {
-    const requestReceivedAt = Date.now(); // When request is received
-
+// Existing Route: Fetch NTP Time
+app.get('/time', (req, res) => {
     ntpClient.getNetworkTime(NTP_SERVER, 123, (err, date) => {
         if (err) {
             console.error('NTP Error:', err);
             return res.status(500).json({ error: 'Failed to fetch NTP time' });
         }
-
-        const serverProcessingTime = Date.now() - requestReceivedAt; // Processing delay
-
-        res.json({ 
-            utc_time: date.toISOString(),
-            serverProcessingTime: serverProcessingTime
-        });
+        res.json({ time: date.toISOString() });
     });
 });
 
