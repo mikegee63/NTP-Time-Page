@@ -6,9 +6,13 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Main heading -->
   <h1>Your time is exact!</h1>
 
-  <!-- Main clock with AM/PM -->
+  <!-- This is where we'll show the difference -->
+  <div id="difference"></div>
+
+  <!-- Main clock container -->
   <div id="clock-container">
     <div id="clock">--:--:--</div>
     <div id="ampm"></div>
@@ -17,41 +21,31 @@
   <!-- Date below the clock -->
   <div id="date">Loading date...</div>
 
+  <!-- Subheading -->
   <h2>Stratum 1 NTP Disciplined</h2>
 
   <!-- City times container -->
   <div class="city-container">
-    <!-- Los Angeles -->
     <div class="city">
       <div class="city-name">Los Angeles</div>
       <div class="city-time" id="LA-time">--:--:--</div>
     </div>
-
-    <!-- New York -->
     <div class="city">
       <div class="city-name">New York</div>
       <div class="city-time" id="NY-time">--:--:--</div>
     </div>
-
-    <!-- London -->
     <div class="city">
       <div class="city-name">London</div>
       <div class="city-time" id="London-time">--:--:--</div>
     </div>
-
-    <!-- Paris -->
     <div class="city">
       <div class="city-name">Paris</div>
       <div class="city-time" id="Paris-time">--:--:--</div>
     </div>
-
-    <!-- Beijing -->
     <div class="city">
       <div class="city-name">Beijing</div>
       <div class="city-time" id="Beijing-time">--:--:--</div>
     </div>
-
-    <!-- Tokyo -->
     <div class="city">
       <div class="city-name">Tokyo</div>
       <div class="city-time" id="Tokyo-time">--:--:--</div>
@@ -63,43 +57,43 @@
     let resyncIntervalId;
 
     async function syncTime() {
-  try {
-    const requestStart = Date.now();
-    const response = await fetch("/sync");
-    const data = await response.json();
-    const requestEnd = Date.now();
+      try {
+        const requestStart = Date.now();
+        const response = await fetch("/sync");
+        const data = await response.json();
+        const requestEnd = Date.now();
 
-    const roundTripTime = requestEnd - requestStart;
-    const serverProcessingTime = data.serverProcessingTime;
-    const networkLatency = (roundTripTime - serverProcessingTime); // in ms
+        const roundTripTime = requestEnd - requestStart;
+        const serverProcessingTime = data.serverProcessingTime;
+        // total network latency in ms (approx roundTrip - server time)
+        const networkLatency = (roundTripTime - serverProcessingTime);
 
-    const serverTime = new Date(data.time).getTime();
+        // the NTP server time in ms
+        const serverTime = new Date(data.time).getTime();
 
-    // Same offset you had before
-    offset = serverTime + networkLatency - Date.now() - 26; 
+        // same offset formula you used before
+        offset = serverTime + networkLatency - Date.now() - 26;
 
-    // 1) difference in seconds
-    let differenceSec = offset / 1000; // e.g., +0.006
-    // 2) sign and absolute
-    let sign = differenceSec >= 0 ? "+" : "-";
-    differenceSec = Math.abs(differenceSec);
+        // 1) difference in seconds (offset is ms difference from local clock)
+        let differenceSec = offset / 1000;
+        let sign = differenceSec >= 0 ? "+" : "-";
+        differenceSec = Math.abs(differenceSec);
 
-    // 3) approximate uncertainty: half the one-way latency in seconds
-    let uncertaintySec = (networkLatency / 2) / 1000; // e.g., ± 0.025
+        // 2) approximate uncertainty (half of networkLatency in seconds)
+        let uncertaintySec = (networkLatency / 2) / 1000;
 
-    // Format to, say, 3 decimal places
-    let differenceFormatted = sign + differenceSec.toFixed(3) + " seconds";
-    let uncertaintyFormatted = "±" + uncertaintySec.toFixed(3) + " seconds";
+        // 3) format for display
+        let differenceFormatted = `${sign}${differenceSec.toFixed(3)} seconds`;
+        let uncertaintyFormatted = `±${uncertaintySec.toFixed(3)} seconds`;
 
-    // 4) Insert into the page
-    const diffElem = document.getElementById("difference");
-    diffElem.innerText = `The difference from our reference clock is ${differenceFormatted} (${uncertaintyFormatted}).`;
+        // 4) show the user
+        const diffElem = document.getElementById("difference");
+        diffElem.innerText = `The difference from our reference clock is ${differenceFormatted} (${uncertaintyFormatted}).`;
 
-  } catch (error) {
-    console.error("Failed to sync with NTP:", error);
-  }
-}
-
+      } catch (error) {
+        console.error("Failed to sync with NTP:", error);
+      }
+    }
 
     // Update the main clock
     function updateClock() {
@@ -120,7 +114,7 @@
       document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
       document.getElementById("ampm").innerText = amPm;
 
-      // Show date: e.g., Saturday, January 25, 2025
+      // show date e.g. "Saturday, January 25, 2025"
       document.getElementById("date").innerText = now.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
@@ -147,17 +141,16 @@
         realNow.toLocaleTimeString("en-US", { timeZone: "Asia/Tokyo" });
     }
 
-    // The "ticking" loop that ensures the clock flips exactly at second boundary
+    // Precise "ticking" loop
     function tick() {
       updateClock();
       updateCityClocks();
 
-      // Calculate how many ms until the *next* exact second boundary
+      // figure out how many ms until next second boundary
       const now = new Date(Date.now() + offset);
       const ms = now.getMilliseconds();
       const msRemaining = 1000 - ms;
 
-      // Schedule the next tick precisely at the next second
       setTimeout(tick, msRemaining);
     }
 
@@ -168,7 +161,7 @@
       // 2. Start the precise ticking method
       tick();
 
-      // 3. (Optional) Re-sync every X minutes to reduce drift
+      // 3. (Optional) Re-sync every 5 minutes
       resyncIntervalId = setInterval(syncTime, 300000); 
     };
   </script>
