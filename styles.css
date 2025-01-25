@@ -19,12 +19,15 @@ h1 {
 
 /* Responsive Clock */
 #clock {
-  font-size: clamp(2em, 10vw, 6em); /* Scale dynamically for all screens */
+  font-size: clamp(2em, 10vw, 6em); /* Adjust for mobile */
   font-weight: bold;
-  white-space: nowrap; /* Prevent line breaks */
-  display: block !important; /* Force visibility */
-  visibility: visible !important; /* Prevent accidental hiding */
+  white-space: nowrap;
+  display: block !important; /* Ensure visibility */
+  visibility: visible !important;
+  width: 100%;
+  text-align: center;
 }
+
 
 
 /* Loading Message */
