@@ -1,70 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Time USA</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #111;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
-        #clock {
-            font-size: 5em;
-            font-weight: bold;
-        }
-    </style>
-    <script>
-        let offset = 0;
-
-        async function syncTime() {
-            try {
-                const requestStart = Date.now(); // Timestamp before request
-                const response = await fetch("/sync");
-                const data = await response.json();
-                const requestEnd = Date.now(); // Timestamp after response
-
-                const roundTripTime = requestEnd - requestStart; // Network latency
-                const serverProcessingTime = data.serverProcessingTime; // Processing delay
-                
-                const networkLatency = (roundTripTime - serverProcessingTime) / 1; // Approximate one-way delay
-
-                const serverTime = new Date(data.time).getTime();
-                offset = serverTime + networkLatency - Date.now() - 26; // Apply 26ms correction
-
-                updateClock(); // Update clock immediately
-            } catch (error) {
-                console.error("Failed to sync with NTP:", error);
-            }
-        }
-
-        function updateClock() {
-            const now = new Date(Date.now() + offset);
-            const hours = String(now.getHours()).padStart(2, "0");
-            const minutes = String(now.getMinutes()).padStart(2, "0");
-            const seconds = String(now.getSeconds()).padStart(2, "0");
-            document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
-        }
-
-        setInterval(updateClock, 1000); // Update clock every second
-        window.onload = syncTime; // Sync time on page load
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>World Time USA</title>
+  <!-- Link external CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-    <h1>World Time USA</h1>
+  <!-- A heading resembling the “Your time is exact!” style -->
+  <h1>Your time is exact!</h1>
+  <!-- Sub-text if you want to display offset difference or other text
+       (optional). Leave blank or remove if not needed. -->
+  <div id="difference"></div>
+
+  <!-- Main clock display -->
+  <div id="clock-container">
     <div id="clock">--:--:--</div>
-    <h2>Stratum 1 NTP Disciplined</h2>
+    <div id="ampm"></div>
+  </div>
+  <!-- Date display below the clock -->
+  <div id="date">Loading date...</div>
+
+  <!-- Sub-heading that matches your old text -->
+  <h2>Stratum 1 NTP Disciplined</h2>
+
+  <!-- City times row -->
+  <div class="city-container">
+    <div class="city">
+      <div class="city-name">Los Angeles</div>
+      <div class="city-time" id="LA-time">--:--:--</div>
+    </div>
+    <div class="city">
+      <div class="city-name">New York</div>
+      <div class="city-time" id="NY-time">--:--:--</div>
+    </div>
+    <div class="city">
+      <div class="city-name">London</div>
+      <div class="city-time" id="London-time">--:--:--</div>
+    </div>
+    <div class="city">
+      <div class="city-name">Paris</div>
+      <div class="city-time" id="Paris-time">--:--:--</div>
+    </div>
+    <div class="city">
+      <div class="city-name">Beijing</div>
+      <div class="city-time" id="Beijing-time">--:--:--</div>
+    </div>
+    <div class="city">
+      <div class="city-name">Tokyo</div>
+      <div class="city-time" id="Tokyo-time">--:--:--</div>
+    </div>
+  </div>
+
+  <!-- JavaScript for time syncing & display -->
+  <script>
+    // Offset in ms from local computer time to “true” time per your NTP server
+    let offset = 0;
+
+    // Fetch and calculate the offset from the NTP server
+    async function syncTime() {
+      try {
+        const requestStart = Date.now(); // Before request
+        const response = await fetch("/sync");
+        const data = await response.json();
+        const requestEnd = Date.now(); // After response
+
+        const roundTripTime = requestEnd - requestStart; 
+        const serverProcessingTime = data.serverProcessingTime;
+        // Approximate one-way delay
+        const networkLatency = (roundTripTime - serverProcessingTime) / 1;
+
+        const serverTime = new Date(data.time).getTime();
+        // Subtract the local system's time to get the offset (plus small correction)
+        offset = serverTime + networkLatency - Date.now() - 26;
+
+        // Update the clock immediately after we get the offset
+        updateClock();
+        updateCityClocks();
+      } catch (error) {
+        console.error("Failed to sync with NTP:", error);
+      }
+    }
+
+    // Updates the main user clock (the “exact” time for the user)
+    function updateClock() {
+      const now = new Date(Date.now() + offset);
+
+      let hours = now.getHours();
+      let minutes = String(now.getMinutes()).padStart(2, "0");
+      let seconds = String(now.getSeconds()).padStart(2, "0");
+      let amPm = hours >= 12 ? "pm" : "am";
+      // Convert 24-hr to 12-hr if desired:
+      if (hours === 0) {
+        hours = 12; // midnight is 12 AM
+      } else if (hours > 12) {
+        hours = hours - 12;
+      }
+      hours = String(hours).padStart(2, "0");
+
+      document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
+      document.getElementById("ampm").innerText = amPm;
+
+      // Display the date (e.g. "Saturday, January 25, 2025")
+      let dateString = now.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+      document.getElementById("date").innerText = dateString;
+    }
+
+    // Updates the 6 major city times using the same “real” date object
+    // but displayed in each city’s time zone
+    function updateCityClocks() {
+      // Construct a single "true" moment from offset
+      let realNow = new Date(Date.now() + offset);
+
+      // For each city, do .toLocaleTimeString with the relevant timeZone
+      document.getElementById("LA-time").innerText = realNow.toLocaleTimeString("en-US", {
+        timeZone: "America/Los_Angeles",
+      });
+      document.getElementById("NY-time").innerText = realNow.toLocaleTimeString("en-US", {
+        timeZone: "America/New_York",
+      });
+      document.getElementById("London-time").innerText = realNow.toLocaleTimeString("en-US", {
+        timeZone: "Europe/London",
+      });
+      document.getElementById("Paris-time").innerText = realNow.toLocaleTimeString("en-US", {
+        timeZone: "Europe/Paris",
+      });
+      document.getElementById("Beijing-time").innerText = realNow.toLocaleTimeString("en-US", {
+        timeZone: "Asia/Shanghai",
+      });
+      document.getElementById("Tokyo-time").innerText = realNow.toLocaleTimeString("en-US", {
+        timeZone: "Asia/Tokyo",
+      });
+    }
+
+    // Repeatedly update the main clock and city clocks every 1s
+    setInterval(() => {
+      updateClock();
+      updateCityClocks();
+    }, 1000);
+
+    // Sync the time once page loads
+    window.onload = syncTime;
+  </script>
 </body>
 </html>
