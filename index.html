@@ -1,148 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Time USA</title>
-    <link rel="stylesheet" href="styles.css"> <!-- ✅ Properly linked CSS -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Time USA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    #clock {
+      font-size: 5em;
+      font-weight: bold;
+    }
+    #loading {
+      font-size: 1.5em;
+      margin-top: 10px;
+    }
+  </style>
+  <script>
+    let offset = 0; // Final offset in ms between server & client
+    let lastSyncTime = 0; // Last sync time (for drift calculations)
 
-    <script>
-        let offset = 0;
-        let lastSyncTime = 0;
+    /************************************************************
+     *  Multi-Ping Sync: Perform multiple pings & pick best offset
+     ************************************************************/
+    async function syncTime(pings = 5) {
+        const offsets = [];
+        document.getElementById("loading").textContent = "Syncing with NTP server...";
 
-        // ✅ List of major cities & their IANA time zones
-        const cities = [
-    { name: "LosAngeles", timeZone: "America/Los_Angeles" },
-    { name: "NewYork", timeZone: "America/New_York" },
-    { name: "London", timeZone: "Europe/London" },
-    { name: "Paris", timeZone: "Europe/Paris" },
-    { name: "Beijing", timeZone: "Asia/Shanghai" },
-    { name: "Tokyo", timeZone: "Asia/Tokyo" }
-];
-
-
-        /************************************************************
-         *  Sync Time from Server and Correct Offset
-         ************************************************************/
-        async function syncTime() {
-            try {
-                const response = await fetch("/time");
-                const data = await response.json();
-                const serverTime = new Date(data.time).getTime();
-                const clientTime = Date.now();
-                offset = serverTime - clientTime;
-
-                lastSyncTime = Date.now();
-                document.getElementById("loading").textContent = "Stratum 1 Disciplined";
-
-                // ✅ Immediately update clock & world times after syncing
-                updateClock();
-                updateWorldClocks(new Date(serverTime));
-            } catch (error) {
-                console.error("Failed to fetch NTP time:", error);
-                document.getElementById("loading").textContent = "Sync failed.";
+        for (let i = 0; i < pings; i++) {
+            const offset = await singlePing();
+            if (offset !== null) {
+                offsets.push(offset);
             }
+            await new Promise(res => setTimeout(res, 50)); // Short delay between pings
         }
 
-        /************************************************************
-         *  Update Main Clock Display
-         ************************************************************/
-        function updateClock() {
-            const now = new Date(Date.now() + offset);
-            const hours = String(now.getHours()).padStart(2, "0");
-            const minutes = String(now.getMinutes()).padStart(2, "0");
-            const seconds = String(now.getSeconds()).padStart(2, "0");
-
-            const clockElement = document.getElementById("clock");
-            if (clockElement) {
-                clockElement.innerText = `${hours}:${minutes}:${seconds}`;
-            } else {
-                console.error("Clock element NOT FOUND!");
-            }
-
-            // ✅ Update world clocks too
-            updateWorldClocks(now);
+        if (offsets.length === 0) {
+            console.error("All pings failed! Offset not updated.");
+            document.getElementById("loading").textContent = "Sync failed.";
+            return;
         }
 
-        /************************************************************
-         *  Update World Clocks (Fixes Time Zones & DST)
-         ************************************************************/
-        function updateWorldClocks(nowUTC) {
-    cities.forEach(city => {
-        const cityTimeString = nowUTC.toLocaleTimeString("en-US", { 
+        // Pick the best offset (median is less affected by network spikes)
+        offsets.sort((a, b) => a - b);
+        const mid = Math.floor(offsets.length / 2);
+        offset = offsets.length % 2 === 1 ? offsets[mid] : (offsets[mid - 1] + offsets[mid]) / 2;
+
+        lastSyncTime = Date.now();
+        document.getElementById("loading").textContent = "Stratum 1 Disciplined";
+        console.log(`Offsets collected: ${offsets.map(o => o.toFixed(2))} ms`);
+    }
+
+    /************************************************************
+     *  Single Ping: Fetch time from /time & calculate offset
+     ************************************************************/
+    async function singlePing() {
+        try {
+            const requestStart = Date.now();
+            const response = await fetch("/time");
+            const data = await response.json();
+            const requestEnd = Date.now();
+
+            const serverUTC = new Date(data.utc_time).getTime();
+            const roundTripTime = requestEnd - requestStart;
+            const processingDelay = data.serverProcessingTime;
+            const networkLatency = (roundTripTime - processingDelay) / 2;
+
+            return serverUTC + networkLatency - Date.now(); // Return corrected offset
+        } catch (error) {
+            console.error("Failed to fetch NTP time:", error);
+            return null;
+        }
+    }
+
+    /************************************************************
+     *  Smooth Real-Time Clock Update (Higher Accuracy)
+     ************************************************************/
+    function updateClock() {
+        const now = new Date(Date.now() + offset);
+
+        // Convert UTC to user's local time
+        const localTimeString = now.toLocaleTimeString("en-US", { 
             hour: "2-digit", 
             minute: "2-digit", 
-            second: "2-digit",
-            hour12: true,
-            timeZone: city.timeZone
+            second: "2-digit", 
+            hour12: true 
         });
 
-        const cityElement = document.getElementById(city.name);
-        if (cityElement) {
-            cityElement.innerText = cityTimeString;
-        } else {
-            console.error(`City element NOT FOUND: ${city.name}`);
+        document.getElementById("clock").innerText = localTimeString;
+
+        // Use requestAnimationFrame for smoother updates
+        requestAnimationFrame(updateClock);
+    }
+
+    /************************************************************
+     *  Continuous Sync: Re-sync every 2 minutes to avoid drift
+     ************************************************************/
+    setInterval(() => {
+        const drift = Date.now() - lastSyncTime;
+        if (drift > 120000) { // Re-sync if more than 2 minutes have passed
+            syncTime();
         }
-    });
-}
+    }, 10000); // Check every 10 seconds
 
-
-        /************************************************************
-         *  Update Date Display (User's Local Date)
-         ************************************************************/
-        function updateDate() {
-            const now = new Date();
-            const formattedDate = now.toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            });
-
-            document.getElementById("date").textContent = formattedDate;
-        }
-
-        /************************************************************
-         *  Continuous Sync: Re-sync every 2 minutes to avoid drift
-         ************************************************************/
-        setInterval(() => {
-            const drift = Date.now() - lastSyncTime;
-            if (drift > 120000) { // ✅ Re-sync if more than 2 minutes have passed
-                syncTime();
-            }
-        }, 10000); // ✅ Check every 10 seconds
-
-        /************************************************************
-         *  Page Initialization
-         ************************************************************/
-        window.onload = async () => {
-            document.getElementById("clock").innerText = "Loading...";
-            await syncTime(); // ✅ Sync time on startup
-            updateClock(); // ✅ Start updating clock in real-time
-            updateDate();  // ✅ Display formatted date
-        };
-
-        setInterval(updateClock, 1000); // ✅ Update every second
-    </script>
+    /************************************************************
+     *  Page Initialization
+     ************************************************************/
+    window.onload = async () => {
+        await syncTime(5); // Perform 5 pings on startup
+        updateClock(); // Start updating clock in real time
+    };
+</script>
 </head>
-
 <body>
-    <h1>World Time USA</h1>
-    <div id="clock">--:--:--</div>
-    <p id="loading">Syncing with NTP server...</p>
-
-    <!-- Wrapper for City Blocks & Date -->
-    <div class="city-wrapper">
-        <div id="date"></div>
-
-        <!-- City Time Blocks -->
-        <div class="city">Los Angeles<br><span id="LosAngeles">--:--:--</span></div>
-<div class="city">New York<br><span id="NewYork">--:--:--</span></div>
-<div class="city">London<br><span id="London">--:--:--</span></div>
-<div class="city">Paris<br><span id="Paris">--:--:--</span></div>
-<div class="city">Beijing<br><span id="Beijing">--:--:--</span></div>
-<div class="city">Tokyo<br><span id="Tokyo">--:--:--</span></div>
-
-    </div>
+  <h1>World Time USA</h1>
+  <div id="clock">--:--:--</div>
+  <p id="loading">Syncing with NTP server...</p>
 </body>
 </html>
