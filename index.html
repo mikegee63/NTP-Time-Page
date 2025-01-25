@@ -6,23 +6,56 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- ... same HTML structure as before ... -->
   <h1>Your time is exact!</h1>
+
+  <!-- Main clock with AM/PM -->
   <div id="clock-container">
     <div id="clock">--:--:--</div>
     <div id="ampm"></div>
   </div>
+
+  <!-- Date below the clock -->
   <div id="date">Loading date...</div>
 
   <h2>Stratum 1 NTP Disciplined</h2>
 
+  <!-- City times container -->
   <div class="city-container">
-    <!-- Same city blocks as before, e.g. -->
+    <!-- Los Angeles -->
     <div class="city">
       <div class="city-name">Los Angeles</div>
       <div class="city-time" id="LA-time">--:--:--</div>
     </div>
-    <!-- etc. for NY, London, Paris, Beijing, Tokyo -->
+
+    <!-- New York -->
+    <div class="city">
+      <div class="city-name">New York</div>
+      <div class="city-time" id="NY-time">--:--:--</div>
+    </div>
+
+    <!-- London -->
+    <div class="city">
+      <div class="city-name">London</div>
+      <div class="city-time" id="London-time">--:--:--</div>
+    </div>
+
+    <!-- Paris -->
+    <div class="city">
+      <div class="city-name">Paris</div>
+      <div class="city-time" id="Paris-time">--:--:--</div>
+    </div>
+
+    <!-- Beijing -->
+    <div class="city">
+      <div class="city-name">Beijing</div>
+      <div class="city-time" id="Beijing-time">--:--:--</div>
+    </div>
+
+    <!-- Tokyo -->
+    <div class="city">
+      <div class="city-name">Tokyo</div>
+      <div class="city-time" id="Tokyo-time">--:--:--</div>
+    </div>
   </div>
 
   <script>
@@ -68,7 +101,7 @@
       document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
       document.getElementById("ampm").innerText = amPm;
 
-      // Show date: Saturday, January 25, 2025
+      // Show date: e.g., Saturday, January 25, 2025
       document.getElementById("date").innerText = now.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
@@ -103,7 +136,7 @@
       // Calculate how many ms until the *next* exact second boundary
       const now = new Date(Date.now() + offset);
       const ms = now.getMilliseconds();
-      const msRemaining = 1000 - ms;  // e.g. if ms=123, wait 877ms to next second
+      const msRemaining = 1000 - ms;
 
       // Schedule the next tick precisely at the next second
       setTimeout(tick, msRemaining);
@@ -116,8 +149,7 @@
       // 2. Start the precise ticking method
       tick();
 
-      // 3. (Optional) Re-sync every X minutes to reduce drift from network changes
-      //    E.g. every 300 seconds (5 minutes):
+      // 3. (Optional) Re-sync every X minutes to reduce drift
       resyncIntervalId = setInterval(syncTime, 300000); 
     };
   </script>
