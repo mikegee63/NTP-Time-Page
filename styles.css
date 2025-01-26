@@ -1,4 +1,4 @@
-/* Basic body styling */
+/* Global Styles */
 body {
   font-family: Arial, sans-serif;
   text-align: center;
@@ -7,30 +7,30 @@ body {
   margin: 0;
   padding: 0;
 
-  /* Flex container to center everything vertically */
+  /* Flex container to center content */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  /* So it fills full height */
+  /* Full viewport height */
   min-height: 100vh;
 }
 
-/* “Your time is exact!” heading */
+/* Main Heading */
 h1 {
-  font-size: 2.5em;
+  font-size: 2.8em;
   margin: 0.2em 0;
 }
 
-/* Sub-text for difference (if used) */
+/* Difference Display (if used) */
 #difference {
   margin: 0.5em 0;
   font-size: 1em;
   color: #ccc;
 }
 
-/* Main clock container */
+/* Clock Container */
 #clock-container {
   display: flex;
   align-items: baseline;
@@ -38,72 +38,63 @@ h1 {
   font-weight: bold;
 }
 
-/* The big clock digits */
+/* Large Clock Digits */
 #clock {
-  font-size: 5em;
+  font-size: 6vw; /* Scales with viewport width */
 }
 
-/* The AM/PM indicator next to the clock */
+/* AM/PM Indicator */
 #ampm {
-  font-size: 2em;
+  font-size: 2vw;
   margin-left: 0.3em;
 }
 
-/* Date under the clock */
+/* Date Display */
 #date {
-  font-size: 1.3em;
+  font-size: 1.5em;
   margin-top: 0.3em;
 }
 
-/* The “Stratum 1 NTP Disciplined” sub-heading (h2) */
+/* Subheading */
 h2 {
   margin-top: 0.5em;
   font-size: 1.2em;
   font-weight: normal;
 }
 
-/* Container for the 6 city time blocks */
+/* City Time Container */
 .city-container {
   display: flex;
-  flex-wrap: wrap;      /* Wrap so it fits nicely on mobile as well */
+  flex-wrap: wrap; /* Allows wrapping on small screens */
   justify-content: center;
+  max-width: 90%;
+  gap: 10px;
   margin-top: 20px;
 }
 
-/* Each city’s block */
+/* City Time Block */
 .city {
-  background-color: #fff; /* White background */
-  color: #000;            /* Black text */
+  background-color: #fff;
+  color: #000;
   padding: 15px 20px;
-  margin: 10px;
   border-radius: 8px;
-  font-size: 1.1em;
+  font-size: 1.2em;
   text-align: center;
-  min-width: 130px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow */
+  min-width: 140px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  flex: 1 1 140px;
 }
 
-/* City name (optional you can style differently) */
+/* City Name */
 .city-name {
   font-weight: bold;
 }
 
-/* Actual city time inside each block */
+/* City Time */
 .city-time {
   margin-top: 5px;
-  font-size: 1.2em;
+  font-size: 1.3em;
   font-weight: normal;
 }
 
-/* MEDIA QUERIES if needed for smaller screens */
-@media (max-width: 600px) {
-  #clock {
-    font-size: 3.5em;
-  }
-  #ampm {
-    font-size: 1.2em;
-  }
-  .city {
-    font-size: 1em;
-  }
-}
+/
