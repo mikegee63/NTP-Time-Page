@@ -83,7 +83,7 @@
 
     // 4) Show result
     document.getElementById("difference").innerText =
-      `The difference from our reference clock is ${differenceFormatted} (${uncertaintyFormatted}).`;
+      `Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).`;
 
   } catch (error) {
     console.error("Failed to sync with NTP:", error);
