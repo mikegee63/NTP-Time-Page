@@ -41,9 +41,7 @@ app.get('/sync', async (req, res) => {
       console.log("Trying next NTP server:", ntpServers[currentNtpServer]); // Log the actual server being tried
       res.status(500).json({ error: 'Failed to synchronize time' });
     }
-  });
-
-const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
