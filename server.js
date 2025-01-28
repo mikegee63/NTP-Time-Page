@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, '/')));
 
 // server.js
 const ntpServers = [
-    "67.80.15.73", // Your existing NTP server (replace with the actual value)
+    "67.80.1.73", // Your existing NTP server (replace with the actual value)
     "0.north-america.pool.ntp.org",
     "1.north-america.pool.ntp.org",
   ];
