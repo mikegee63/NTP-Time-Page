@@ -14,7 +14,7 @@ const ntpServers = [
     "67.80.15.73", // Your existing NTP server (replace with the actual value)
     "0.north-america.pool.ntp.org",
     "1.north-america.pool.ntp.org",
-    const PORT = process.env.PORT || 3000;
+    
   ];
   let currentNtpServer = 0;
 
