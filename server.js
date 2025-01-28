@@ -14,6 +14,7 @@ const ntpServers = [
     "67.80.15.73", // Your existing NTP server (replace with the actual value)
     "0.north-america.pool.ntp.org",
     "1.north-america.pool.ntp.org",
+    const PORT = process.env.PORT || 3000;
   ];
   let currentNtpServer = 0;
 
@@ -55,4 +56,7 @@ app.get('/sync', async (req, res) => {
 
       res.status(500).json({ error: 'Failed to synchronize time' });
   }
+});
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
