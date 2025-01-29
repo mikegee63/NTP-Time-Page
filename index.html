@@ -150,6 +150,12 @@
   // Schedule next update at the precise boundary
   setTimeout(() => requestAnimationFrame(tick), msRemaining);
 }
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        console.log("Tab is active again, resyncing...");
+        syncTime();
+    }
+});
 
     window.onload = async () => {
       // 1. Sync once at load
