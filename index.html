@@ -152,21 +152,14 @@
 }
 document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
-        console.log("Tab is active again, resyncing...");
-        syncTime();
+        console.log("Tab is active again, resyncing immediately...");
+        clearInterval(resyncIntervalId); // Stop existing resync timer
+        syncTime().then(() => {
+            resyncIntervalId = setInterval(syncTime, 300000); // Restart 5-min sync timer
+        });
     }
 });
 
-    window.onload = async () => {
-      // 1. Sync once at load
-      await syncTime();
-      
-      // 2. Start the precise ticking method
-      tick();
-
-      // 3. (Optional) Re-sync every 5 minutes
-      resyncIntervalId = setInterval(syncTime, 300000); 
-    };
   </script>
 </body>
 </html>
