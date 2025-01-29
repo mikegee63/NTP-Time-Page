@@ -78,12 +78,12 @@
     let uncertaintySec = (networkLatency / 4) / 1000; 
 
     // 3) Format display
-    let differenceFormatted = `${sign}${differenceSec.toFixed(3)} seconds`;
-    let uncertaintyFormatted = `±${uncertaintySec.toFixed(3)} seconds`;
+    let differenceFormatted = ${sign}${differenceSec.toFixed(3)} seconds;
+    let uncertaintyFormatted = ±${uncertaintySec.toFixed(3)} seconds;
 
     // 4) Show result
     document.getElementById("difference").innerText =
-      `Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).`;
+      Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).;
 
   } catch (error) {
     console.error("Failed to sync with NTP:", error);
@@ -93,27 +93,31 @@
 
     // Update the main clock
     function updateClock() {
-    if (!document.getElementById("clock")) {
-        console.error("Clock element NOT FOUND!");
-        return;
-    }
+      const now = new Date(Date.now() + offset);
 
-    const now = new Date(Date.now() + offset);
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    const seconds = String(now.getSeconds()).padStart(2, "0");
+      let hours = now.getHours();
+      let minutes = String(now.getMinutes()).padStart(2, "0");
+      let seconds = String(now.getSeconds()).padStart(2, "0");
 
-    document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
-    document.getElementById("date").innerText = now.toLocaleDateString("en-US", {
+      const amPm = hours >= 12 ? "pm" : "am";
+      if (hours === 0) {
+        hours = 12; // midnight is 12 AM
+      } else if (hours > 12) {
+        hours -= 12;
+      }
+      hours = String(hours).padStart(2, "0");
+
+      document.getElementById("clock").innerText = ${hours}:${minutes}:${seconds};
+      document.getElementById("ampm").innerText = amPm;
+
+      // show date e.g. "Saturday, January 25, 2025"
+      document.getElementById("date").innerText = now.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
         day: "numeric",
         year: "numeric",
-    });
-
-    console.log(`Updated clock: ${hours}:${minutes}:${seconds}`);
-}
-
+      });
+    }
 
     // Update the 6 city times
     function updateCityClocks() {
@@ -146,24 +150,23 @@
   // Schedule next update at the precise boundary
   setTimeout(() => requestAnimationFrame(tick), msRemaining);
 }
-document.addEventListener("visibilitychange", async () => {
+document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
-        console.log("Tab is active again, resyncing immediately...");
-        clearInterval(resyncIntervalId); // Stop existing resync timer
-
-        await syncTime(); // ✅ Ensure we sync before updating the clock
-
-        // ✅ Force immediate clock and city time updates
-        updateClock();
-        updateCityClocks();
-
-        // ✅ Restart the automatic 5-minute sync timer
-        resyncIntervalId = setInterval(syncTime, 300000);
+        console.log("Tab is active again, resyncing...");
+        syncTime();
     }
 });
 
-    }
+    window.onload = async () => {
+      // 1. Sync once at load
+      await syncTime();
+      
+      // 2. Start the precise ticking method
+      tick();
 
+      // 3. (Optional) Re-sync every 5 minutes
+      resyncIntervalId = setInterval(syncTime, 300000); 
+    };
   </script>
 </body>
 </html>
