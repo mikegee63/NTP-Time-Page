@@ -150,13 +150,22 @@
   // Schedule next update at the precise boundary
   setTimeout(() => requestAnimationFrame(tick), msRemaining);
 }
-document.addEventListener("visibilitychange", () => {
+document.addEventListener("visibilitychange", async () => {
     if (!document.hidden) {
         console.log("Tab is active again, resyncing immediately...");
         clearInterval(resyncIntervalId); // Stop existing resync timer
-        syncTime().then(() => {
-            resyncIntervalId = setInterval(syncTime, 300000); // Restart 5-min sync timer
-        });
+
+        await syncTime(); // ✅ Ensure we sync before updating the clock
+
+        // ✅ Force immediate clock and city time updates
+        updateClock();
+        updateCityClocks();
+
+        // ✅ Restart the automatic 5-minute sync timer
+        resyncIntervalId = setInterval(syncTime, 300000);
+    }
+});
+
     }
 
   </script>
