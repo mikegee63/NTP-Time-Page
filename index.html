@@ -93,31 +93,27 @@
 
     // Update the main clock
     function updateClock() {
-      const now = new Date(Date.now() + offset);
+    if (!document.getElementById("clock")) {
+        console.error("Clock element NOT FOUND!");
+        return;
+    }
 
-      let hours = now.getHours();
-      let minutes = String(now.getMinutes()).padStart(2, "0");
-      let seconds = String(now.getSeconds()).padStart(2, "0");
+    const now = new Date(Date.now() + offset);
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
 
-      const amPm = hours >= 12 ? "pm" : "am";
-      if (hours === 0) {
-        hours = 12; // midnight is 12 AM
-      } else if (hours > 12) {
-        hours -= 12;
-      }
-      hours = String(hours).padStart(2, "0");
-
-      document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
-      document.getElementById("ampm").innerText = amPm;
-
-      // show date e.g. "Saturday, January 25, 2025"
-      document.getElementById("date").innerText = now.toLocaleDateString("en-US", {
+    document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
+    document.getElementById("date").innerText = now.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
         day: "numeric",
         year: "numeric",
-      });
-    }
+    });
+
+    console.log(`Updated clock: ${hours}:${minutes}:${seconds}`);
+}
+
 
     // Update the 6 city times
     function updateCityClocks() {
