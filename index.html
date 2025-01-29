@@ -78,12 +78,12 @@
     let uncertaintySec = (networkLatency / 4) / 1000; 
 
     // 3) Format display
-    let differenceFormatted = ${sign}${differenceSec.toFixed(3)} seconds;
-    let uncertaintyFormatted = ±${uncertaintySec.toFixed(3)} seconds;
+    let differenceFormatted = `${sign}${differenceSec.toFixed(3)} seconds`;
+    let uncertaintyFormatted = `±${uncertaintySec.toFixed(3)} seconds`;
 
     // 4) Show result
     document.getElementById("difference").innerText =
-      Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).;
+      `Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).`;
 
   } catch (error) {
     console.error("Failed to sync with NTP:", error);
@@ -107,7 +107,7 @@
       }
       hours = String(hours).padStart(2, "0");
 
-      document.getElementById("clock").innerText = ${hours}:${minutes}:${seconds};
+      document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
       document.getElementById("ampm").innerText = amPm;
 
       // show date e.g. "Saturday, January 25, 2025"
