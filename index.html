@@ -9,6 +9,20 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Ticker container (new) -->
+  <div class="ticker-container">
+    <div class="ticker">
+      <!-- Ticker items – duplicate them for a continuous loop -->
+      <div class="ticker-item">Welcome to World Time USA!</div>
+      <div class="ticker-item">Accurate time delivered in real-time.</div>
+      <div class="ticker-item">Stay synced with our Stratum 1 NTP.</div>
+      <!-- Duplicate the items for seamless looping -->
+      <div class="ticker-item">Welcome to World Time USA!</div>
+      <div class="ticker-item">Accurate time delivered in real-time.</div>
+      <div class="ticker-item">Stay synced with our Stratum 1 NTP.</div>
+    </div>
+  </div>
+
   <!-- Main heading -->
   <h1>Your time compared</h1>
 
@@ -20,11 +34,11 @@
     <div id="clock">--:--:--</div>
     <div id="ampm"></div>
   </div>
- <!-- Subheading -->
+  <!-- Subheading -->
   <h2>Stratum 1 NTP Disciplined</h2>
- <!-- Date below the clock -->
+  <!-- Date below the clock -->
   <div id="date">Loading date...</div>
-<!-- City times container -->
+  <!-- City times container -->
   <div class="city-container">
     <div class="city">
       <div class="city-name">Los Angeles</div>
@@ -52,58 +66,51 @@
     </div>
   </div>
 
+  <!-- Existing clock and time sync code -->
   <script>
     let offset = 0;  // NTP offset in ms from local time
     let resyncIntervalId;
 
     async function syncTime() {
-  try {
-    const requestStart = Date.now();
-    const response = await fetch("/sync");
-    const data = await response.json();
-    const requestEnd = Date.now();
+      try {
+        const requestStart = Date.now();
+        const response = await fetch("/sync");
+        const data = await response.json();
+        const requestEnd = Date.now();
 
-    const roundTripTime = requestEnd - requestStart;
-    const serverProcessingTime = data.serverProcessingTime;
-    const networkLatency = (roundTripTime - serverProcessingTime); // Total round-trip
+        const roundTripTime = requestEnd - requestStart;
+        const serverProcessingTime = data.serverProcessingTime;
+        const networkLatency = (roundTripTime - serverProcessingTime);
 
-    // Adjust offset using *half* the network latency
-    const serverTime = new Date(data.time).getTime();
-    offset = serverTime + (networkLatency / 2) - Date.now() - 26;
+        const serverTime = new Date(data.time).getTime();
+        offset = serverTime + (networkLatency / 2) - Date.now() - 26;
 
-    // 1) Difference in seconds
-    let differenceSec = offset / 1000;
-    let sign = differenceSec >= 0 ? "+" : "-";
-    differenceSec = Math.abs(differenceSec);
+        let differenceSec = offset / 1000;
+        let sign = differenceSec >= 0 ? "+" : "-";
+        differenceSec = Math.abs(differenceSec);
 
-    // 2) Approximate uncertainty using *one-quarter* latency instead of half
-    let uncertaintySec = (networkLatency / 4) / 1000; 
+        let uncertaintySec = (networkLatency / 4) / 1000; 
 
-    // 3) Format display
-    let differenceFormatted = `${sign}${differenceSec.toFixed(3)} seconds`;
-    let uncertaintyFormatted = `±${uncertaintySec.toFixed(3)} seconds`;
+        let differenceFormatted = `${sign}${differenceSec.toFixed(3)} seconds`;
+        let uncertaintyFormatted = `±${uncertaintySec.toFixed(3)} seconds`;
 
-    // 4) Show result
-    document.getElementById("difference").innerText =
-      `Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).`;
+        document.getElementById("difference").innerText =
+          `Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).`;
 
-  } catch (error) {
-    console.error("Failed to sync with NTP:", error);
-  }
-}
+      } catch (error) {
+        console.error("Failed to sync with NTP:", error);
+      }
+    }
 
-
-    // Update the main clock
     function updateClock() {
       const now = new Date(Date.now() + offset);
-
       let hours = now.getHours();
       let minutes = String(now.getMinutes()).padStart(2, "0");
       let seconds = String(now.getSeconds()).padStart(2, "0");
 
       const amPm = hours >= 12 ? "pm" : "am";
       if (hours === 0) {
-        hours = 12; // midnight is 12 AM
+        hours = 12;
       } else if (hours > 12) {
         hours -= 12;
       }
@@ -112,7 +119,6 @@
       document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
       document.getElementById("ampm").innerText = amPm;
 
-      // show date e.g. "Saturday, January 25, 2025"
       document.getElementById("date").innerText = now.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
@@ -121,10 +127,8 @@
       });
     }
 
-    // Update the 6 city times
     function updateCityClocks() {
       const realNow = new Date(Date.now() + offset);
-
       document.getElementById("LA-time").innerText =
         realNow.toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles" });
       document.getElementById("NY-time").innerText =
@@ -139,39 +143,121 @@
         realNow.toLocaleTimeString("en-US", { timeZone: "Asia/Tokyo" });
     }
 
-    // Precise "ticking" loop
     function tick() {
-  updateClock();
-  updateCityClocks();
-
-  // Get exact ms until next second boundary
-  const now = new Date(Date.now() + offset);
-  const ms = now.getMilliseconds();
-  const msRemaining = 1000 - ms;
-
-  // Schedule next update at the precise boundary
-  setTimeout(() => requestAnimationFrame(tick), msRemaining);
-}
-document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-        console.log("Tab is active again, resyncing immediately...");
-        clearInterval(resyncIntervalId); // Stop existing resync timer
-        syncTime().then(() => {
-            resyncIntervalId = setInterval(syncTime, 300000); // Restart 5-min sync timer
-        });
+      updateClock();
+      updateCityClocks();
+      const now = new Date(Date.now() + offset);
+      const ms = now.getMilliseconds();
+      const msRemaining = 1000 - ms;
+      setTimeout(() => requestAnimationFrame(tick), msRemaining);
     }
-});
+    
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        console.log("Tab is active again, resyncing immediately...");
+        clearInterval(resyncIntervalId);
+        syncTime().then(() => {
+          resyncIntervalId = setInterval(syncTime, 300000);
+        });
+      }
+    });
 
     window.onload = async () => {
-      // 1. Sync once at load
       await syncTime();
-      
-      // 2. Start the precise ticking method
       tick();
-
-      // 3. (Optional) Re-sync every 5 minutes
       resyncIntervalId = setInterval(syncTime, 300000); 
     };
+  </script>
+
+  <!-- Ticker functionality script (new) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tickerContainer = document.querySelector('.ticker-container');
+      const ticker = document.querySelector('.ticker');
+      let isDragging = false;
+      let startX;
+      let startTransform;
+      const autoScrollSpeed = 0.5; // pixels per frame (adjust as needed)
+      let paused = false;
+
+      // Helper: Get current translateX from the ticker's transform
+      function getTranslateX(element) {
+        const style = window.getComputedStyle(element);
+        // The transform might be "none" if not set yet.
+        if (style.transform === 'none') return 0;
+        const matrix = new WebKitCSSMatrix(style.transform);
+        return matrix.m41;
+      }
+
+      // Animation loop for auto-scrolling
+      function animateTicker() {
+        if (!paused && !isDragging) {
+          const currentX = getTranslateX(ticker);
+          const newX = currentX - autoScrollSpeed;
+          ticker.style.transform = `translateX(${newX}px)`;
+
+          // Reset position once the entire ticker has scrolled out.
+          if (Math.abs(newX) >= ticker.offsetWidth / 2) {
+            // (Because we duplicated the items, reset when half the width is gone.)
+            ticker.style.transform = 'translateX(0px)';
+          }
+        }
+        requestAnimationFrame(animateTicker);
+      }
+
+      // Pause auto-scroll on hover
+      tickerContainer.addEventListener('mouseenter', () => {
+        paused = true;
+      });
+      tickerContainer.addEventListener('mouseleave', () => {
+        paused = false;
+      });
+
+      // Mouse dragging
+      tickerContainer.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        ticker.style.transition = 'none';
+        startX = e.pageX;
+        startTransform = getTranslateX(ticker);
+        paused = true;
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.pageX - startX;
+        ticker.style.transform = `translateX(${startTransform + deltaX}px)`;
+      });
+      document.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          ticker.style.transition = '';
+          paused = false;
+        }
+      });
+
+      // Touch dragging for mobile devices
+      tickerContainer.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        ticker.style.transition = 'none';
+        startX = e.touches[0].pageX;
+        startTransform = getTranslateX(ticker);
+        paused = true;
+      });
+      tickerContainer.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.touches[0].pageX - startX;
+        ticker.style.transform = `translateX(${startTransform + deltaX}px)`;
+      });
+      tickerContainer.addEventListener('touchend', () => {
+        if (isDragging) {
+          isDragging = false;
+          ticker.style.transition = '';
+          paused = false;
+        }
+      });
+
+      // Start the ticker animation
+      animateTicker();
+    });
   </script>
 </body>
 </html>
