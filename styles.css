@@ -26,9 +26,10 @@ h1 {
 .ticker-container {
   width: 100%;
   overflow: hidden;
-  background-color: #222;  /* Adjust background as needed */
-  padding: 10px 0;
-  margin-bottom: 20px;     /* Space between ticker and heading */
+  background-color: #222;  /* Adjust background color as desired */
+  padding: 5px 0;          /* Reduced vertical padding for one line height */
+  margin-bottom: 20px;
+  height: 1.5em;           /* Force container height to one line */
 }
 
 .ticker {
@@ -41,9 +42,16 @@ h1 {
 
 .ticker-item {
   margin-right: 50px;      /* Space between items */
-  font-size: 1.2em;
-  color: #fff;
+  font-size: 1.2em;        /* Use the same text size as before */
+  color: orange;           /* Orange text */
+  display: inline-block;
 }
+
+/* Optional: Highlight the selected time zone */
+.ticker-item.active {
+  text-decoration: underline;
+}
+
 
 /* Sub-text for difference (if used) */
 #difference {
