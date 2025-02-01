@@ -22,6 +22,28 @@ h1 {
   font-size: 2.5em;
   margin: 0.2em 0;
 }
+/* Ticker Styles */
+.ticker-container {
+  width: 100%;
+  overflow: hidden;
+  background-color: #222;  /* Adjust background as needed */
+  padding: 10px 0;
+  margin-bottom: 20px;     /* Space between ticker and heading */
+}
+
+.ticker {
+  display: inline-flex;
+  white-space: nowrap;
+  transform: translateX(0);
+  user-select: none;
+  cursor: grab;
+}
+
+.ticker-item {
+  margin-right: 50px;      /* Space between items */
+  font-size: 1.2em;
+  color: #fff;
+}
 
 /* Sub-text for difference (if used) */
 #difference {
