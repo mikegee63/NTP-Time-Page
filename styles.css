@@ -26,7 +26,7 @@ h1 {
 .ticker-container {
   width: 100%;
   overflow: hidden;
-  background-color: #222;  /* Adjust background color as desired */
+  background-color: #222;  /* Adjust background as desired */
   padding: 5px 0;          /* Reduced vertical padding for one line height */
   margin-bottom: 20px;
   height: 1.5em;           /* Force container height to one line */
@@ -42,12 +42,29 @@ h1 {
 
 .ticker-item {
   margin-right: 50px;      /* Space between items */
-  font-size: 1.2em;        /* Use the same text size as before */
+  font-size: 1.2em;        /* Same text size as before */
   color: orange;           /* Orange text */
   display: inline-block;
+  position: relative;      /* Needed for tooltip positioning */
 }
 
-/* Optional: Highlight the selected time zone */
+/* Tooltip: When hovering over a ticker item, show a tooltip with full details */
+.ticker-item:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;           /* Place tooltip above the item */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  z-index: 10;
+  font-size: 0.9em;
+}
+
+/* Optional: Highlight the active (clicked) ticker item */
 .ticker-item.active {
   text-decoration: underline;
 }
