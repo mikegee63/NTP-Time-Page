@@ -1,4 +1,4 @@
- /* Basic body styling */
+/* Basic Body Styling */
 body {
   font-family: Arial, sans-serif;
   text-align: center;
@@ -6,78 +6,27 @@ body {
   color: #fff;
   margin: 0;
   padding: 0;
-
-  /* Flex container to center everything vertically */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
-  /* So it fills full height */
   min-height: 100vh;
 }
 
-/* “Your time is exact!” heading */
+/* Main Heading */
 h1 {
   font-size: 2.5em;
   margin: 0.2em 0;
 }
-/* Ticker Styles */
-.ticker-container {
-  width: 100%;
-  overflow: hidden;
-  background-color: #222;  /* Adjust background as desired */
-  padding: 5px 0;          /* Reduced vertical padding for one line height */
-  margin-bottom: 20px;
-  height: 1.5em;           /* Force container height to one line */
-}
 
-.ticker {
-  display: inline-flex;
-  white-space: nowrap;
-  transform: translateX(0);
-  user-select: none;
-  cursor: grab;
-}
-
-.ticker-item {
-  margin-right: 50px;      /* Space between items */
-  font-size: 1.2em;        /* Same text size as before */
-  color: orange;           /* Orange text */
-  display: inline-block;
-  position: relative;      /* Needed for tooltip positioning */
-}
-
-/* Tooltip: When hovering over a ticker item, show a tooltip with full details */
-.ticker-item:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;           /* Place tooltip above the item */
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: #fff;
-  padding: 5px 8px;
-  border-radius: 3px;
-  white-space: nowrap;
-  z-index: 10;
-  font-size: 0.9em;
-}
-
-/* Optional: Highlight the active (clicked) ticker item */
-.ticker-item.active {
-  text-decoration: underline;
-}
-
-
-/* Sub-text for difference (if used) */
+/* Difference Display */
 #difference {
   margin: 0.5em 0;
   font-size: 1em;
   color: #ccc;
 }
 
-/* Main clock container */
+/* Main Clock Container */
 #clock-container {
   display: flex;
   align-items: baseline;
@@ -85,64 +34,64 @@ h1 {
   font-weight: bold;
 }
 
-/* The big clock digits */
+/* Clock Digits */
 #clock {
   font-size: 5em;
 }
 
-/* The AM/PM indicator next to the clock */
+/* AM/PM Indicator */
 #ampm {
   font-size: 2em;
   margin-left: 0.3em;
 }
 
-/* Date under the clock */
+/* Date Display */
 #date {
   font-size: 1.3em;
   margin-top: 0.3em;
 }
 
-/* The “Stratum 1 NTP Disciplined” sub-heading (h2) */
+/* Subheading */
 h2 {
   margin-top: 0.5em;
   font-size: 1.2em;
   font-weight: normal;
 }
 
-/* Container for the 6 city time blocks */
+/* City Times Container */
 .city-container {
   display: flex;
-  flex-wrap: wrap;      /* Wrap so it fits nicely on mobile as well */
+  flex-wrap: wrap;
   justify-content: center;
   margin-top: 20px;
 }
 
-/* Each city’s block */
+/* City Blocks */
 .city {
-  background-color: #fff; /* White background */
-  color: #000;            /* Black text */
+  background-color: #fff;
+  color: #000;
   padding: 15px 20px;
   margin: 10px;
   border-radius: 8px;
   font-size: 1.1em;
   text-align: center;
   min-width: 130px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* City name (optional you can style differently) */
+/* City Name */
 .city-name {
   font-weight: bold;
 }
 
-/* Actual city time inside each block */
+/* City Time */
 .city-time {
   margin-top: 5px;
   font-size: 1.2em;
   font-weight: normal;
 }
 
-/* MEDIA QUERIES if needed for smaller screens */
+/* Media Queries for Smaller Screens */
 @media (max-width: 600px) {
   #clock {
     font-size: 3.5em;
@@ -153,4 +102,51 @@ h2 {
   .city {
     font-size: 1em;
   }
+}
+
+/* Ticker Container */
+.ticker-container {
+  width: 100%;
+  overflow: hidden;
+  background-color: #222;
+  padding: 5px 0;
+  margin-bottom: 20px;
+  height: 1.5em; /* One-line height */
+}
+
+/* Ticker */
+.ticker {
+  display: inline-flex;
+  white-space: nowrap;
+  transform: translateX(0);
+  user-select: none;
+  cursor: grab;
+}
+
+/* Ticker Items */
+.ticker-item {
+  margin-right: 50px;
+  font-size: 1.2em;
+  color: orange;
+  display: inline-block;
+  position: relative;
+}
+
+/* Global Tooltip Styles */
+#global-tooltip {
+  position: absolute;
+  display: none;
+  z-index: 9999;
+  background: #333;
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Optional: Highlight Active Ticker Item */
+.ticker-item.active {
+  text-decoration: underline;
 }
