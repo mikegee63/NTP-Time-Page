@@ -10,9 +10,8 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, '/')));
 
 const ntpServers = [
-  '67.80.15.73', // Your primary NTP server
-  '0.north-america.pool.ntp.org',
-  '1.north-america.pool.ntp.org',
+  'w2aiq.ddns.net', // Your primary NTP server
+  
 ];
 let currentNtpServer = 0;
 
