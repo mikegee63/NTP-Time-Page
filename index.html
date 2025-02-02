@@ -9,32 +9,32 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Ticker container (new) -->
+  <!-- Ticker Container -->
   <div class="ticker-container">
     <div class="ticker">
-      <!--
-         The ticker’s content is now generated dynamically (see the script below)
-         based on the “timeZones” array (which holds every zone from your list).
-      -->
+      <!-- Ticker content is generated dynamically by the script below -->
     </div>
   </div>
 
-  <!-- Main heading -->
+  <!-- Main Heading -->
   <h1>Your time compared</h1>
 
-  <!-- This is where we'll show the difference -->
+  <!-- Difference Display -->
   <div id="difference"></div>
 
-  <!-- Main clock container -->
+  <!-- Main Clock Container -->
   <div id="clock-container">
     <div id="clock">--:--:--</div>
     <div id="ampm"></div>
   </div>
+
   <!-- Subheading -->
   <h2>Stratum 1 NTP Disciplined</h2>
-  <!-- Date below the clock -->
+
+  <!-- Date Display -->
   <div id="date">Loading date...</div>
-  <!-- City times container -->
+
+  <!-- City Times Container -->
   <div class="city-container">
     <div class="city">
       <div class="city-name">Los Angeles</div>
@@ -62,12 +62,12 @@
     </div>
   </div>
 
-  <!-- Existing clock and time sync code -->
+  <!-- Clock and Time Sync Code -->
   <script>
-    // "offset" is computed from our NTP sync so that Date.now()+offset gives the true UTC.
-    let offset = 0;  
+    // "offset" is computed via NTP so that Date.now() + offset gives the true UTC.
+    let offset = 0;
     let resyncIntervalId;
-    // When a ticker item is clicked, we store its information here.
+    // If a ticker item is clicked, its info is stored in selectedTZ.
     // (If null, the main clock shows the original time.)
     let selectedTZ = null;
 
@@ -77,44 +77,39 @@
         const response = await fetch("/sync");
         const data = await response.json();
         const requestEnd = Date.now();
-
         const roundTripTime = requestEnd - requestStart;
         const serverProcessingTime = data.serverProcessingTime;
-        const networkLatency = (roundTripTime - serverProcessingTime);
-
+        const networkLatency = roundTripTime - serverProcessingTime;
         const serverTime = new Date(data.time).getTime();
         offset = serverTime + (networkLatency / 2) - Date.now() - 26;
 
         let differenceSec = offset / 1000;
         let sign = differenceSec >= 0 ? "+" : "-";
         differenceSec = Math.abs(differenceSec);
-
-        let uncertaintySec = (networkLatency / 4) / 1000; 
-
+        let uncertaintySec = (networkLatency / 4) / 1000;
         let differenceFormatted = `${sign}${differenceSec.toFixed(3)} seconds`;
         let uncertaintyFormatted = `±${uncertaintySec.toFixed(3)} seconds`;
 
         document.getElementById("difference").innerText =
           `Your system time compared to our Stratum 1 reference is ${differenceFormatted} (${uncertaintyFormatted}).`;
-
       } catch (error) {
         console.error("Failed to sync with NTP:", error);
       }
     }
 
-    // For a selected time zone, we will compute the clock’s time manually.
+    // Format a Date (computed from UTC) into a time string (with AM/PM)
     function formatTime(date) {
       let hours = date.getUTCHours();
       let minutes = date.getUTCMinutes();
       let seconds = date.getUTCSeconds();
       const amPm = hours >= 12 ? "pm" : "am";
       hours = hours % 12;
-      if(hours === 0) hours = 12;
-      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} ${amPm}`;
+      if (hours === 0) hours = 12;
+      return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')} ${amPm}`;
     }
 
+    // Format a Date into a locale date string (using UTC as the timeZone)
     function formatDate(date) {
-      // Because we computed "target" time by adding the desired offset, we treat the result as UTC.
       return date.toLocaleDateString('en-US', {
         timeZone: 'UTC',
         weekday: "long",
@@ -125,23 +120,24 @@
     }
 
     function updateClock() {
-      // Our “true” time is (Date.now()+offset)
       if (selectedTZ) {
-        // Compute the target time by adding the selected zone’s offset (in minutes)
+        // Compute the target time by adding the selected zone’s offset (in minutes) to true UTC.
         let trueUTC = Date.now() + offset;
         let targetTime = new Date(trueUTC + selectedTZ.offsetMinutes * 60000);
-        document.getElementById("clock").innerText = formatTime(targetTime).split(" ")[0];
-        document.getElementById("ampm").innerText = formatTime(targetTime).split(" ")[1];
+        let timeStr = formatTime(targetTime);
+        let parts = timeStr.split(" ");
+        document.getElementById("clock").innerText = parts[0];
+        document.getElementById("ampm").innerText = parts[1];
         document.getElementById("date").innerText = formatDate(targetTime);
       } else {
-        // Default behavior: use local clock formatting
+        // Default behavior: use local formatting.
         const now = new Date(Date.now() + offset);
         let hours = now.getHours();
         let minutes = String(now.getMinutes()).padStart(2, "0");
         let seconds = String(now.getSeconds()).padStart(2, "0");
         const amPm = hours >= 12 ? "pm" : "am";
-        if (hours === 0) { hours = 12; }
-        else if (hours > 12) { hours -= 12; }
+        if (hours === 0) hours = 12;
+        else if (hours > 12) hours -= 12;
         hours = String(hours).padStart(2, "0");
         document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
         document.getElementById("ampm").innerText = amPm;
@@ -192,18 +188,18 @@
     window.onload = async () => {
       await syncTime();
       tick();
-      resyncIntervalId = setInterval(syncTime, 300000); 
+      resyncIntervalId = setInterval(syncTime, 300000);
     };
   </script>
 
-  <!-- Ticker functionality and population (new) -->
+  <!-- Ticker Functionality and Population -->
   <script>
-    /***** Build the complete list of time zones *****/
-    // Each object has:
-    //  - abbr: the abbreviation text to show
-    //  - name: the full time zone name
-    //  - location: the region or location (or “Military”)
-    //  - offset: a string like "UTC +5:30" (possibly with a slash—for such cases the first offset is used)
+    /* Each time zone object contains:
+         - abbr: abbreviation text to show
+         - name: full time zone name
+         - location: region or category (e.g. Military)
+         - offset: a string like "UTC +5:30" (if a slash is present, the first value is used)
+    */
     const timeZones = [
       { abbr: "A",    name: "Alfa Time Zone",                            location: "Military",                offset: "UTC +1" },
       { abbr: "ACDT", name: "Australian Central Daylight Time",          location: "Australia",               offset: "UTC +10:30" },
@@ -451,56 +447,51 @@
       { abbr: "Z",    name: "Zulu Time Zone",                            location: "Military",                offset: "UTC +0" }
     ];
 
-    // Function to parse an offset string (like "UTC +10:30" or "UTC -5")
-    // If the string contains a slash (e.g. "UTC +9:30 / +10:30"), the first value is used.
+    // Function to parse an offset string (e.g. "UTC +10:30" or "UTC -5").
+    // If a slash is present (e.g. "UTC +9:30 / +10:30"), the first value is used.
     function parseOffset(offsetStr) {
       let s = offsetStr.replace("UTC", "").trim();
       if (s === "") return 0;
       if (s.indexOf("/") !== -1) {
         s = s.split("/")[0].trim();
       }
-      // s is now like "+10:30" or "-5"
       const sign = s[0] === "-" ? -1 : 1;
-      s = s.substring(1); // remove the sign
+      s = s.substring(1);
       const parts = s.split(":");
       const hours = parseInt(parts[0], 10);
       const minutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
       return sign * (hours * 60 + minutes);
     }
 
-    // For each time zone in our list, add a property “offsetMinutes”
+    // Compute offsetMinutes for each time zone object.
     timeZones.forEach(tz => {
       tz.offsetMinutes = parseOffset(tz.offset);
     });
 
-    /***** Populate the ticker *****/
     document.addEventListener('DOMContentLoaded', function() {
       const tickerContainer = document.querySelector('.ticker-container');
       const ticker = document.querySelector('.ticker');
       
-      // Create a ticker item element for each time zone
+      // Create a ticker item for each time zone.
       timeZones.forEach(tz => {
         const item = document.createElement('div');
         item.className = 'ticker-item';
         item.innerText = tz.abbr;
-        // Store full details as a data attribute for the tooltip
+        // Store full tooltip text and computed offset in data attributes.
         item.setAttribute('data-tooltip', `${tz.name} – ${tz.location} (${tz.offset})`);
-        // Also store the computed offset in a data attribute (as minutes)
         item.setAttribute('data-offset', tz.offsetMinutes);
         ticker.appendChild(item);
       });
-
-      // Duplicate the ticker content for seamless scrolling
+      
+      // Duplicate the ticker content for seamless scrolling.
       ticker.innerHTML += ticker.innerHTML;
 
-      // --- Ticker animation and interaction code (similar to our previous solution) ---
       let isDragging = false;
       let startX;
       let startTransform;
       const autoScrollSpeed = 0.5; // pixels per frame
       let paused = false;
 
-      // Helper: Get current translateX from the ticker’s transform
       function getTranslateX(element) {
         const style = window.getComputedStyle(element);
         if (style.transform === 'none') return 0;
@@ -513,7 +504,6 @@
           const currentX = getTranslateX(ticker);
           const newX = currentX - autoScrollSpeed;
           ticker.style.transform = `translateX(${newX}px)`;
-          // When half the ticker (the duplicated portion) has scrolled, reset.
           if (Math.abs(newX) >= ticker.offsetWidth / 2) {
             ticker.style.transform = 'translateX(0px)';
           }
@@ -521,7 +511,6 @@
         requestAnimationFrame(animateTicker);
       }
 
-      // Pause auto-scroll on hover over the container
       tickerContainer.addEventListener('mouseenter', () => {
         paused = true;
       });
@@ -529,7 +518,6 @@
         paused = false;
       });
 
-      // Mouse dragging for manual scrolling
       tickerContainer.addEventListener('mousedown', (e) => {
         isDragging = true;
         ticker.style.transition = 'none';
@@ -550,7 +538,6 @@
         }
       });
 
-      // Touch dragging for mobile devices
       tickerContainer.addEventListener('touchstart', (e) => {
         isDragging = true;
         ticker.style.transition = 'none';
@@ -571,26 +558,42 @@
         }
       });
 
-      // When a ticker item is clicked, update the main clock's time zone.
-      // We use the data-offset attribute (in minutes) from the clicked item.
+      // Use a global tooltip element to avoid clipping by the ticker container.
+      const globalTooltip = document.getElementById('global-tooltip');
+
       const tickerItems = document.querySelectorAll('.ticker-item');
       tickerItems.forEach(item => {
+        item.addEventListener('mouseenter', function(e) {
+          const tooltipText = item.getAttribute('data-tooltip');
+          globalTooltip.innerText = tooltipText;
+          globalTooltip.style.display = 'block';
+          globalTooltip.style.left = (e.pageX + 10) + 'px';
+          globalTooltip.style.top = (e.pageY - 40) + 'px';
+        });
+        item.addEventListener('mousemove', function(e) {
+          globalTooltip.style.left = (e.pageX + 10) + 'px';
+          globalTooltip.style.top = (e.pageY - 40) + 'px';
+        });
+        item.addEventListener('mouseleave', function() {
+          globalTooltip.style.display = 'none';
+        });
+        // On click, update the main clock's time zone.
         item.addEventListener('click', function() {
-          // On click, update our global selectedTZ object.
           const offsetMinutes = parseInt(item.getAttribute('data-offset'), 10);
           selectedTZ = {
             abbr: item.innerText.trim(),
             offsetMinutes: offsetMinutes
           };
-          // Optionally, highlight the active ticker item:
           tickerItems.forEach(i => i.classList.remove('active'));
           item.classList.add('active');
         });
       });
 
-      // Start the auto-scrolling ticker.
       animateTicker();
     });
   </script>
+
+  <!-- Global Tooltip Element (placed outside the ticker container so it isn’t clipped) -->
+  <div id="global-tooltip"></div>
 </body>
 </html>
