@@ -1,5 +1,4 @@
 <!-- Clock and Time Sync Code -->
-  <script>
     // "offset" is computed via NTP so that Date.now() + offset gives the true UTC.
     let offset = 0;
     let resyncIntervalId;
@@ -126,4 +125,3 @@
       tick();
       resyncIntervalId = setInterval(syncTime, 300000);
     };
-  </script>
