@@ -1,8 +1,17 @@
 <!DOCTYPE html> 
 <html lang="en">
 <head>
-  <script src="timeSync.js"></script>
-  <script src="ticker.js"></script>
+  <script>
+    function loadScript(filename) {
+        var script = document.createElement('script');
+        script.src = filename + "?v=" + new Date().getTime();
+        document.head.appendChild(script);
+    }
+
+    loadScript("timeSync.js");
+    loadScript("ticker.js");
+  </script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta charset="UTF-8"/>
   <!-- Favicon -->
