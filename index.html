@@ -65,19 +65,9 @@
   <div id="global-tooltip"></div>
 
   <!-- Load JavaScript with Cache Busting -->
-  <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    function loadScript(filename) {
-      var script = document.createElement("script");
-      script.src = filename + "?v=" + new Date().getTime();
-      script.async = false; // Ensure scripts run in order
-      document.body.appendChild(script);
-    }
+  <script src="timeSync.js?v=<?php echo time(); ?>"></script>
+<script src="ticker.js?v=<?php echo time(); ?>"></script>
 
-    loadScript("timeSync.js");
-    loadScript("ticker.js");
-  });
-</script>
   
 </body>
 </html>
