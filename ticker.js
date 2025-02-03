@@ -267,7 +267,7 @@
       const minutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
       return sign * (hours * 60 + minutes);
     }
-console.log("Ticker updated at: " + new Date());
+
     // Compute offsetMinutes for each time zone object.
     timeZones.forEach(tz => {
       tz.offsetMinutes = parseOffset(tz.offset);
