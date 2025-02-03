@@ -1,5 +1,4 @@
 <!-- Ticker Functionality and Population -->
-  <script>
     /* Each time zone object contains:
          - abbr: abbreviation text to show
          - name: full time zone name
@@ -397,4 +396,4 @@
 
       animateTicker();
     });
-  </script>
+  
