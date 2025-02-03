@@ -337,7 +337,7 @@
       });
       document.addEventListener('mouseup', () => {
         if (isDragging) {
-          isDragging = false;
+          isDragging = true;
           ticker.style.transition = '';
           paused = false;
         }
