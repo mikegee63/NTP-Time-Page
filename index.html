@@ -1,17 +1,6 @@
 <!DOCTYPE html> 
 <html lang="en">
 <head>
-  <script>
-    function loadScript(filename) {
-        var script = document.createElement('script');
-        script.src = filename + "?v=" + new Date().getTime();
-        document.head.appendChild(script);
-    }
-
-    loadScript("timeSync.js");
-    loadScript("ticker.js");
-  </script>
-
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta charset="UTF-8"/>
   <!-- Favicon -->
@@ -74,6 +63,18 @@
 
   <!-- Global Tooltip Element (placed outside the ticker container so it isn’t clipped) -->
   <div id="global-tooltip"></div>
+
+  <!-- Load JavaScript with Cache Busting -->
+  <script>
+    function loadScript(filename) {
+        var script = document.createElement('script');
+        script.src = filename + "?v=" + new Date().getTime();
+        document.body.appendChild(script);
+    }
+
+    loadScript("timeSync.js");
+    loadScript("ticker.js");
+  </script>
   
 </body>
 </html>
