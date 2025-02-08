@@ -1,12 +1,48 @@
 <!DOCTYPE html> 
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="World Time USA lets you compare the current time to your time and in major cities such as Los Angeles, New York, London, Paris, Beijing, and Tokyo. Stay updated with our Stratum 1 NTP disciplined clock." />
+  <meta name="keywords" content="world time, USA time, clock, NTP, Stratum 1, Los Angeles, New York, London, Paris, Beijing, Tokyo" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Mr. G" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="World Time USA" />
+  <meta property="og:description" content="Compare the current time in major cities around the world with our Stratum 1 NTP disciplined clock." />
+  <meta property="og:image" content="/clock.png" />
+  <meta property="og:url" content="http://www.example.com/" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="World Time USA" />
+  <meta name="twitter:description" content="Compare the current time in major cities such as Los Angeles, New York, London, Paris, Beijing, and Tokyo." />
+  <meta name="twitter:image" content="/clock.png" />
+
+  <!-- Canonical URL (update the URL to your actual domain) -->
+  <link rel="canonical" href="http://www.worldtimeusa.com/" />
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/clock.png">
+
   <title>World Time USA</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "World Time USA",
+    "url": "http://www.worldtimeusa.com/",
+    "description": "Compare the current time in major cities like Los Angeles, New York, London, Paris, Beijing, and Tokyo with our Stratum 1 NTP disciplined clock."
+  }
+  </script>
 </head>
 <body>
   <!-- Ticker Container -->
@@ -66,8 +102,6 @@
 
   <!-- Load JavaScript with Cache Busting -->
   <script src="timeSync.js?v=<?php echo time(); ?>"></script>
-<script src="ticker.js?v=<?php echo time(); ?>"></script>
-
-  
+  <script src="ticker.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
