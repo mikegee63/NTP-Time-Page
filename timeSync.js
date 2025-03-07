@@ -31,39 +31,18 @@ async function syncTime() {
   }
 }
 
-// Format a Date (computed from UTC) into a time string (with AM/PM)
-function formatTime(date) {
-  let hours = date.getUTCHours();
-  let minutes = date.getUTCMinutes();
-  let seconds = date.getUTCSeconds();
-  const amPm = hours >= 12 ? "pm" : "am";
-  hours = hours % 12;
-  if (hours === 0) hours = 12;
-  return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')} ${amPm}`;
-}
-
-// Format a Date into a locale date string (using UTC as the timeZone)
-function formatDate(date) {
-  return date.toLocaleDateString('en-US', {
-    timeZone: 'UTC',
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric"
-  });
-}
-
 function updateClock() {
   if (selectedTZ) {
-    // Compute the target time by adding the selected zone’s offset (in minutes) to true UTC.
-    let trueUTC = Date.now() + offset;
-    let targetTime = new Date(trueUTC + selectedTZ.offsetMinutes * 60000);
-    let timeStr = formatTime(targetTime);
-    let parts = timeStr.split(" ");
+    // Use the selected time zone's IANA identifier for DST adjustments.
+    let trueUTC = new Date(Date.now() + offset);
+    let timeOptions = { timeZone: selectedTZ.iana, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+    let dateOptions = { timeZone: selectedTZ.iana, weekday: "long", month: "long", day: "numeric", year: "numeric" };
+    let timeStr = trueUTC.toLocaleTimeString('en-US', timeOptions);
+    let dateStr = trueUTC.toLocaleDateString('en-US', dateOptions);
+    let parts = timeStr.split(' ');
     document.getElementById("clock").innerText = parts[0];
     document.getElementById("ampm").innerText = parts[1];
-    document.getElementById("date").innerText = formatDate(targetTime);
-    // Update current time zone display
+    document.getElementById("date").innerText = dateStr;
     document.getElementById("current-tz").innerText = `Currently Displaying: ${selectedTZ.abbr} (${selectedTZ.name})`;
   } else {
     // Default behavior: use local formatting.
@@ -83,7 +62,6 @@ function updateClock() {
       day: "numeric",
       year: "numeric"
     });
-    // For local time, display the system's time zone identifier.
     const localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
     document.getElementById("current-tz").innerText = `Currently Displaying: Local Time (${localTZ})`;
   }
