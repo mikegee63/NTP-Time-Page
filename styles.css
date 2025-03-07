@@ -51,6 +51,13 @@ h1 {
   margin-top: 0.3em;
 }
 
+/* New: Current Time Zone Display */
+#current-tz {
+  color: orange;
+  font-size: 1em;  /* Approximately 2 points smaller than ticker text */
+  margin: 10px 0;
+}
+
 /* Subheading */
 h2 {
   margin-top: 0.5em;
