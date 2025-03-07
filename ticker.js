@@ -3,31 +3,33 @@
      - name: full time zone name
      - location: region or category (e.g. Military)
      - offset: a string like "UTC +5:30" (if a slash is present, the first value is used)
+     - iana: IANA time zone identifier for DST support
 */
 const timeZones = [
-  { abbr: "A",    name: "Alfa Time Zone",                            location: "Military",                offset: "UTC +1" },
-  { abbr: "ACDT", name: "Australian Central Daylight Time",          location: "Australia",               offset: "UTC +10:30" },
-  { abbr: "ACST", name: "Australian Central Standard Time",          location: "Australia",               offset: "UTC +9:30" },
-  { abbr: "ACT",  name: "Acre Time",                                 location: "South America",           offset: "UTC -5" },
-  { abbr: "ACT",  name: "Australian Central Time",                   location: "Australia",               offset: "UTC +9:30" },
-  { abbr: "ACWST",name: "Australian Central Western Standard Time",  location: "Australia",               offset: "UTC +8:45" },
-  { abbr: "ADT",  name: "Arabia Daylight Time",                      location: "Asia",                    offset: "UTC +4" },
-  { abbr: "ADT",  name: "Atlantic Daylight Time",                    location: "North America Atlantic",  offset: "UTC -3" },
-  { abbr: "AEDT", name: "Australian Eastern Daylight Time",          location: "Australia",               offset: "UTC +11" },
-  { abbr: "AEST", name: "Australian Eastern Standard Time",          location: "Australia",               offset: "UTC +10" },
-  { abbr: "AET",  name: "Australian Eastern Time",                   location: "Australia",               offset: "UTC +10:00 / +11:00" },
-  { abbr: "AFT",  name: "Afghanistan Time",                          location: "Asia",                    offset: "UTC +4:30" },
-  { abbr: "AKDT", name: "Alaska Daylight Time",                      location: "North America",           offset: "UTC -8" },
-  { abbr: "AKST", name: "Alaska Standard Time",                      location: "North America",           offset: "UTC -9" },
-  { abbr: "ALMT", name: "Alma-Ata Time",                             location: "Asia",                    offset: "UTC +6" },
-  { abbr: "AMST", name: "Amazon Summer Time",                        location: "South America",           offset: "UTC -3" },
-  { abbr: "AMST", name: "Armenia Summer Time",                       location: "Asia",                    offset: "UTC +5" },
-  { abbr: "AMT",  name: "Amazon Time",                               location: "South America",           offset: "UTC -4" },
-  { abbr: "AMT",  name: "Armenia Time",                              location: "Asia",                    offset: "UTC +4" },
+  { abbr: "A",    name: "Alfa Time Zone",                            location: "Military",                offset: "UTC +1", iana: "Etc/GMT-1" },
+  { abbr: "ACDT", name: "Australian Central Daylight Time",          location: "Australia",               offset: "UTC +10:30", iana: "Australia/Adelaide" },
+  { abbr: "ACST", name: "Australian Central Standard Time",          location: "Australia",               offset: "UTC +9:30", iana: "Australia/Adelaide" },
+  { abbr: "ACT",  name: "Acre Time",                                 location: "South America",           offset: "UTC -5", iana: "America/Recife" },
+  { abbr: "ACT",  name: "Australian Central Time",                   location: "Australia",               offset: "UTC +9:30", iana: "Australia/Darwin" },
+  { abbr: "ACWST",name: "Australian Central Western Standard Time",  location: "Australia",               offset: "UTC +8:45", iana: "Australia/Eucla" },
+  { abbr: "ADT",  name: "Arabia Daylight Time",                      location: "Asia",                    offset: "UTC +4", iana: "Asia/Dubai" },
+  { abbr: "ADT",  name: "Atlantic Daylight Time",                    location: "North America Atlantic",  offset: "UTC -3", iana: "America/Halifax" },
+  { abbr: "AEDT", name: "Australian Eastern Daylight Time",          location: "Australia",               offset: "UTC +11", iana: "Australia/Sydney" },
+  { abbr: "AEST", name: "Australian Eastern Standard Time",          location: "Australia",               offset: "UTC +10", iana: "Australia/Brisbane" },
+  { abbr: "AET",  name: "Australian Eastern Time",                   location: "Australia",               offset: "UTC +10:00 / +11:00", iana: "Australia/Sydney" },
+  { abbr: "AFT",  name: "Afghanistan Time",                          location: "Asia",                    offset: "UTC +4:30", iana: "Asia/Kabul" },
+  { abbr: "AKDT", name: "Alaska Daylight Time",                      location: "North America",           offset: "UTC -8", iana: "America/Anchorage" },
+  { abbr: "AKST", name: "Alaska Standard Time",                      location: "North America",           offset: "UTC -9", iana: "America/Anchorage" },
+  { abbr: "ALMT", name: "Alma-Ata Time",                             location: "Asia",                    offset: "UTC +6", iana: "Asia/Almaty" },
+  { abbr: "AMST", name: "Amazon Summer Time",                        location: "South America",           offset: "UTC -3", iana: "America/Sao_Paulo" },
+  { abbr: "AMST", name: "Armenia Summer Time",                       location: "Asia",                    offset: "UTC +5", iana: "Asia/Yerevan" },
+  { abbr: "AMT",  name: "Amazon Time",                               location: "South America",           offset: "UTC -4", iana: "America/Sao_Paulo" },
+  { abbr: "AMT",  name: "Armenia Time",                              location: "Asia",                    offset: "UTC +4", iana: "Asia/Yerevan" },
   // ... (other time zones)
 ];
 
 // Function to parse an offset string (e.g. "UTC +10:30" or "UTC -5").
+// (Kept for fallback purposes, but DST calculations will use the iana property)
 function parseOffset(offsetStr) {
   let s = offsetStr.replace("UTC", "").trim();
   if (s === "") return 0;
@@ -42,7 +44,7 @@ function parseOffset(offsetStr) {
   return sign * (hours * 60 + minutes);
 }
 
-// Compute offsetMinutes for each time zone object.
+// Compute offsetMinutes for each time zone object (for legacy purposes).
 timeZones.forEach(tz => {
   tz.offsetMinutes = parseOffset(tz.offset);
 });
@@ -56,10 +58,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const item = document.createElement('div');
     item.className = 'ticker-item';
     item.innerText = tz.abbr;
-    // Store tooltip, offset, and full name in data attributes.
+    // Store tooltip, offset, full name, and iana in data attributes.
     item.setAttribute('data-tooltip', `${tz.name} – ${tz.location} (${tz.offset})`);
     item.setAttribute('data-offset', tz.offsetMinutes);
     item.setAttribute('data-fullname', tz.name);
+    item.setAttribute('data-iana', tz.iana);
     ticker.appendChild(item);
   });
   
@@ -158,12 +161,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     // On click, update the main clock's time zone using the full object.
     item.addEventListener('click', function() {
-      const offsetMinutes = parseInt(item.getAttribute('data-offset'), 10);
-      const fullname = item.getAttribute('data-fullname');
+      const iana = item.getAttribute('data-iana');
       selectedTZ = {
         abbr: item.innerText.trim(),
-        name: fullname,
-        offsetMinutes: offsetMinutes
+        name: item.getAttribute('data-fullname'),
+        iana: iana
       };
       tickerItems.forEach(i => i.classList.remove('active'));
       item.classList.add('active');
