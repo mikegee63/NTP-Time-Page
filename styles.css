@@ -164,5 +164,12 @@ h2 {
   width: 100%;
   text-align: center;
   padding: 10px;
-  background-color: #fff; /* Optional: background to ensure readability */
+  background-color: #fff;
 }
+
+@media (max-width: 600px) {
+  .page-footer {
+    position: static;
+  }
+}
+
