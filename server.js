@@ -10,8 +10,8 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, '/')));
 
 const ntpServers = [
-  'w2aiq.ddns.net', // Your primary NTP server
-  
+  '192.168.1.99', // LAN stratum 1 NTP server
+  'pool.ntp.org', // Fallback DDNS hostname
 ];
 let currentNtpServer = 0;
 
@@ -54,6 +54,6 @@ app.get("/sync", (req, res) => {
 });
 
 
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
   console.log(`Server running on port ${PORT}`);
 });

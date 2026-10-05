@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light Orbiter Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Import map for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+                
+            }
+        }
+        
+        
+
+    </script>
+</head>
+<body>
+    <h1>Light Orbiter Simulator</h1>
+    <p class="description">
+        Control the ship's speed as a percentage of light speed (c ≈ 670,616,629 mph).
+        The orbital radius (≈ 687.45 million miles) is fixed. Orbit time is calculated purely as Circumference / Speed.
+        Time dilation effects based on Special Relativity are shown.
+        <br>Drag mouse to rotate, Scroll to zoom, Right-drag to pan.
+    </p>
+
+    <div id="simulation-container">
+        <!-- Canvas for Three.js -->
+        <div id="canvas-container">
+             <canvas id="orbitCanvas"></canvas>
+        </div>
+
+        <!-- Controls and Information Panel -->
+        <div id="controls">
+            <h2>Controls & Info</h2>
+
+            <div class="control-group">
+                <label for="percentageSlider">Speed (% of light speed):</label>
+                <input type="range" id="percentageSlider" min="0" max="99.9999" value="0" step="0.0001">
+                <input type="number" id="percentageInput" min="0" max="99.9999" value="0" step="0.0001">
+                <span id="percentageValueDisplay" class="value-display">0.0000</span> %
+            </div>
+
+            <div id="info">
+                <p>Orbital Radius (Fixed): <span id="radiusDisplay" class="value-display">--</span> miles</p>
+                <p>Calculated Speed: <span id="speedMphDisplay" class="value-display">--</span> mph</p>
+                <p>Lorentz Factor (γ): <span id="lorentzDisplay" class="value-display">--</span></p>
+                <hr>
+                <p>Calculated Orbital Period:</p>
+                <p>   <span id="periodHoursDisplay" class="value-display">--</span> hours</p>
+                <p>   <span id="periodDaysDisplay" class="value-display">--</span> days</p>
+                <hr>
+            </div>
+
+            <div id="clocks">
+                 <div class="clock-box">
+                    <span class="clock-label">Earth Time</span>
+                    <span id="earthTimeDisplay" class="clock-time">00:00:00.000</span>
+                 </div>
+                 <div class="clock-box">
+                    <span class="clock-label">Ship Time</span>
+                    <span id="shipTimeDisplay" class="clock-time">00:00:00.000</span>
+                 </div>
+            </div>
+
+            <p class="note"><small>Note: Time = Dist / Speed orbit. Time dilation calculated via Special Relativity.</small></p>
+        </div>
+    </div>
+
+    <!-- Link the JavaScript file -->
+    <script type="module" src="script.js"></script>
+
+</body>
+</html>
